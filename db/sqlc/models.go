@@ -68,7 +68,7 @@ type OdChannelTransaction struct {
 	SettledAmount        sql.NullFloat64 `json:"settled_amount"`
 	CreatedAt            time.Time       `json:"created_at"`
 	UpdatedAt            time.Time       `json:"updated_at"`
-	DeletedAt            time.Time       `json:"deleted_at"`
+	DeletedAt            sql.NullTime    `json:"deleted_at"`
 }
 
 type OdMerchantTransaction struct {
@@ -85,7 +85,7 @@ type OdMerchantTransaction struct {
 	SettledAmount         sql.NullFloat64 `json:"settled_amount"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
-	DeletedAt             time.Time       `json:"deleted_at"`
+	DeletedAt             sql.NullTime    `json:"deleted_at"`
 }
 
 type OdProductTransaction struct {
@@ -104,7 +104,7 @@ type OdProductTransaction struct {
 	SettledAmount         sql.NullFloat64 `json:"settled_amount"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
-	DeletedAt             time.Time       `json:"deleted_at"`
+	DeletedAt             sql.NullTime    `json:"deleted_at"`
 }
 
 type OdProgressEvent struct {
@@ -116,32 +116,32 @@ type OdProgressEvent struct {
 	File                sql.NullString         `json:"file"`
 	CreatedAt           time.Time              `json:"created_at"`
 	UpdatedAt           time.Time              `json:"updated_at"`
-	DeletedAt           time.Time              `json:"deleted_at"`
+	DeletedAt           sql.NullTime           `json:"deleted_at"`
 }
 
 type OdProgressEventType struct {
-	ID                           int64     `json:"id"`
-	ProgressEventTypeName        string    `json:"progress_event_type_name"`
-	ProgressEventTypeDescription string    `json:"progress_event_type_description"`
-	CreatedAt                    time.Time `json:"created_at"`
-	UpdatedAt                    time.Time `json:"updated_at"`
-	DeletedAt                    time.Time `json:"deleted_at"`
+	ID                           int64        `json:"id"`
+	ProgressEventTypeName        string       `json:"progress_event_type_name"`
+	ProgressEventTypeDescription string       `json:"progress_event_type_description"`
+	CreatedAt                    time.Time    `json:"created_at"`
+	UpdatedAt                    time.Time    `json:"updated_at"`
+	DeletedAt                    sql.NullTime `json:"deleted_at"`
 }
 
 type OdTransactionStatus struct {
-	ID                int64     `json:"id"`
-	StatusName        string    `json:"status_name"`
-	StatusDescription string    `json:"status_description"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
-	DeletedAt         time.Time `json:"deleted_at"`
+	ID                int64        `json:"id"`
+	StatusName        string       `json:"status_name"`
+	StatusDescription string       `json:"status_description"`
+	CreatedAt         time.Time    `json:"created_at"`
+	UpdatedAt         time.Time    `json:"updated_at"`
+	DeletedAt         sql.NullTime `json:"deleted_at"`
 }
 
 type OdTransactionType struct {
-	ID              int64     `json:"id"`
-	TypeName        string    `json:"type_name"`
-	TypeDescription string    `json:"type_description"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	DeletedAt       time.Time `json:"deleted_at"`
+	ID              int64        `json:"id"`
+	TypeName        string       `json:"type_name"`
+	TypeDescription string       `json:"type_description"`
+	CreatedAt       time.Time    `json:"created_at"`
+	UpdatedAt       time.Time    `json:"updated_at"`
+	DeletedAt       sql.NullTime `json:"deleted_at"`
 }

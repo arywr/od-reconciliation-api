@@ -6,7 +6,7 @@ CREATE TABLE "od_transaction_statuses" (
     "status_description" varchar NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 CREATE TABLE "od_transaction_types" (
@@ -15,7 +15,7 @@ CREATE TABLE "od_transaction_types" (
     "type_description" varchar NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 CREATE TABLE "od_progress_event_types" (
@@ -24,7 +24,7 @@ CREATE TABLE "od_progress_event_types" (
     "progress_event_type_description" varchar NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 CREATE TABLE "od_progress_events" (
@@ -36,7 +36,7 @@ CREATE TABLE "od_progress_events" (
     "file" varchar,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 CREATE TABLE "od_product_transactions" (
@@ -55,7 +55,7 @@ CREATE TABLE "od_product_transactions" (
     "settled_amount" float DEFAULT 0,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 CREATE TABLE "od_merchant_transactions" (
@@ -72,7 +72,7 @@ CREATE TABLE "od_merchant_transactions" (
     "settled_amount" float DEFAULT 0,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 CREATE TABLE "od_channel_transactions" (
@@ -89,7 +89,7 @@ CREATE TABLE "od_channel_transactions" (
     "settled_amount" float DEFAULT 0,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
-    "deleted_at" timestamptz NOT NULL DEFAULT NULL
+    "deleted_at" timestamptz DEFAULT NULL
 );
 
 ALTER TABLE "od_product_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "od_transaction_statuses" ("id");
