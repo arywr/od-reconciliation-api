@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CreateRandomType(t *testing.T) OdTransactionType {
+func CreateRandomType(t *testing.T) TransactionType {
 	args := CreateTransactionTypeParams{
 		TypeName:        util.RandomType(),
 		TypeDescription: util.RandomDescription(),

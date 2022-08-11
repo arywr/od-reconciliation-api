@@ -11,7 +11,7 @@ import (
 
 const allTransactionType = `-- name: AllTransactionType :many
 SELECT id, type_name, type_description, created_at, updated_at, deleted_at
-FROM od_transaction_types
+FROM transaction_types
 ORDER BY created_at
 OFFSET $1
 LIMIT $2
@@ -22,15 +22,15 @@ type AllTransactionTypeParams struct {
 	Limit  int32 `json:"limit"`
 }
 
-func (q *Queries) AllTransactionType(ctx context.Context, arg AllTransactionTypeParams) ([]OdTransactionType, error) {
+func (q *Queries) AllTransactionType(ctx context.Context, arg AllTransactionTypeParams) ([]TransactionType, error) {
 	rows, err := q.db.QueryContext(ctx, allTransactionType, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []OdTransactionType{}
+	items := []TransactionType{}
 	for rows.Next() {
-		var i OdTransactionType
+		var i TransactionType
 		if err := rows.Scan(
 			&i.ID,
 			&i.TypeName,
@@ -53,7 +53,7 @@ func (q *Queries) AllTransactionType(ctx context.Context, arg AllTransactionType
 }
 
 const createTransactionType = `-- name: CreateTransactionType :one
-INSERT INTO od_transaction_types (
+INSERT INTO transaction_types (
     type_name, type_description
 ) VALUES (
     $1, $2
@@ -66,9 +66,9 @@ type CreateTransactionTypeParams struct {
 	TypeDescription string `json:"type_description"`
 }
 
-func (q *Queries) CreateTransactionType(ctx context.Context, arg CreateTransactionTypeParams) (OdTransactionType, error) {
+func (q *Queries) CreateTransactionType(ctx context.Context, arg CreateTransactionTypeParams) (TransactionType, error) {
 	row := q.db.QueryRowContext(ctx, createTransactionType, arg.TypeName, arg.TypeDescription)
-	var i OdTransactionType
+	var i TransactionType
 	err := row.Scan(
 		&i.ID,
 		&i.TypeName,
@@ -81,7 +81,7 @@ func (q *Queries) CreateTransactionType(ctx context.Context, arg CreateTransacti
 }
 
 const deleteTransactionType = `-- name: DeleteTransactionType :exec
-DELETE FROM od_transaction_types 
+DELETE FROM transaction_types 
 WHERE id = $1
 `
 
@@ -91,7 +91,7 @@ func (q *Queries) DeleteTransactionType(ctx context.Context, id int64) error {
 }
 
 const updateTransactionType = `-- name: UpdateTransactionType :one
-UPDATE od_transaction_types 
+UPDATE transaction_types 
 SET 
     type_name = CASE WHEN $2::text <> '' THEN $2::text ELSE type_name END,
     type_description = CASE WHEN $3::text <> '' THEN $3::text ELSE type_description END,
@@ -106,9 +106,9 @@ type UpdateTransactionTypeParams struct {
 	TypeDescription string `json:"type_description"`
 }
 
-func (q *Queries) UpdateTransactionType(ctx context.Context, arg UpdateTransactionTypeParams) (OdTransactionType, error) {
+func (q *Queries) UpdateTransactionType(ctx context.Context, arg UpdateTransactionTypeParams) (TransactionType, error) {
 	row := q.db.QueryRowContext(ctx, updateTransactionType, arg.ID, arg.TypeName, arg.TypeDescription)
-	var i OdTransactionType
+	var i TransactionType
 	err := row.Scan(
 		&i.ID,
 		&i.TypeName,
@@ -122,13 +122,13 @@ func (q *Queries) UpdateTransactionType(ctx context.Context, arg UpdateTransacti
 
 const viewTransactionType = `-- name: ViewTransactionType :one
 SELECT id, type_name, type_description, created_at, updated_at, deleted_at
-FROM od_transaction_types
+FROM transaction_types
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) ViewTransactionType(ctx context.Context, id int64) (OdTransactionType, error) {
+func (q *Queries) ViewTransactionType(ctx context.Context, id int64) (TransactionType, error) {
 	row := q.db.QueryRowContext(ctx, viewTransactionType, id)
-	var i OdTransactionType
+	var i TransactionType
 	err := row.Scan(
 		&i.ID,
 		&i.TypeName,

@@ -54,7 +54,7 @@ func (ns NullProgressStatusEnum) Value() (driver.Value, error) {
 	return ns.ProgressStatusEnum, nil
 }
 
-type OdChannelTransaction struct {
+type ChannelTransaction struct {
 	ID                   int64           `json:"id"`
 	TransactionStatusID  int16           `json:"transaction_status_id"`
 	TransactionTypeID    int16           `json:"transaction_type_id"`
@@ -71,7 +71,7 @@ type OdChannelTransaction struct {
 	DeletedAt            sql.NullTime    `json:"deleted_at"`
 }
 
-type OdMerchantTransaction struct {
+type MerchantTransaction struct {
 	ID                    int64           `json:"id"`
 	TransactionStatusID   int16           `json:"transaction_status_id"`
 	TransactionTypeID     int16           `json:"transaction_type_id"`
@@ -88,7 +88,7 @@ type OdMerchantTransaction struct {
 	DeletedAt             sql.NullTime    `json:"deleted_at"`
 }
 
-type OdProductTransaction struct {
+type ProductTransaction struct {
 	ID                    int64           `json:"id"`
 	TransactionStatusID   int16           `json:"transaction_status_id"`
 	TransactionTypeID     int16           `json:"transaction_type_id"`
@@ -107,7 +107,7 @@ type OdProductTransaction struct {
 	DeletedAt             sql.NullTime    `json:"deleted_at"`
 }
 
-type OdProgressEvent struct {
+type ProgressEvent struct {
 	ID                  int64                  `json:"id"`
 	ProgressEventTypeID int16                  `json:"progress_event_type_id"`
 	ProgressName        string                 `json:"progress_name"`
@@ -119,7 +119,7 @@ type OdProgressEvent struct {
 	DeletedAt           sql.NullTime           `json:"deleted_at"`
 }
 
-type OdProgressEventType struct {
+type ProgressEventType struct {
 	ID                           int64        `json:"id"`
 	ProgressEventTypeName        string       `json:"progress_event_type_name"`
 	ProgressEventTypeDescription string       `json:"progress_event_type_description"`
@@ -128,7 +128,7 @@ type OdProgressEventType struct {
 	DeletedAt                    sql.NullTime `json:"deleted_at"`
 }
 
-type OdTransactionStatus struct {
+type TransactionStatus struct {
 	ID                int64        `json:"id"`
 	StatusName        string       `json:"status_name"`
 	StatusDescription string       `json:"status_description"`
@@ -137,7 +137,7 @@ type OdTransactionStatus struct {
 	DeletedAt         sql.NullTime `json:"deleted_at"`
 }
 
-type OdTransactionType struct {
+type TransactionType struct {
 	ID              int64        `json:"id"`
 	TypeName        string       `json:"type_name"`
 	TypeDescription string       `json:"type_description"`

@@ -1,6 +1,6 @@
 CREATE TYPE progress_status_enum AS ENUM('on process', 'completed', 'failed');
 
-CREATE TABLE "od_transaction_statuses" (
+CREATE TABLE "transaction_statuses" (
     "id" bigserial PRIMARY KEY,
     "status_name" varchar NOT NULL,
     "status_description" varchar NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "od_transaction_statuses" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-CREATE TABLE "od_transaction_types" (
+CREATE TABLE "transaction_types" (
     "id" bigserial PRIMARY KEY,
     "type_name" varchar NOT NULL,
     "type_description" varchar NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE "od_transaction_types" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-CREATE TABLE "od_progress_event_types" (
+CREATE TABLE "progress_event_types" (
     "id" bigserial PRIMARY KEY,
     "progress_event_type_name" varchar NOT NULL,
     "progress_event_type_description" varchar NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE "od_progress_event_types" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-CREATE TABLE "od_progress_events" (
+CREATE TABLE "progress_events" (
     "id" bigserial PRIMARY KEY,
     "progress_event_type_id" smallint NOT NULL,
     "progress_name" varchar NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE "od_progress_events" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-CREATE TABLE "od_product_transactions" (
+CREATE TABLE "product_transactions" (
     "id" bigserial PRIMARY KEY,
     "transaction_status_id" smallint NOT NULL,
     "transaction_type_id" smallint NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE "od_product_transactions" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-CREATE TABLE "od_merchant_transactions" (
+CREATE TABLE "merchant_transactions" (
     "id" bigserial PRIMARY KEY,
     "transaction_status_id" smallint NOT NULL,
     "transaction_type_id" smallint NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "od_merchant_transactions" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-CREATE TABLE "od_channel_transactions" (
+CREATE TABLE "channel_transactions" (
     "id" bigserial PRIMARY KEY,
     "transaction_status_id" smallint NOT NULL,
     "transaction_type_id" smallint NOT NULL,
@@ -92,16 +92,16 @@ CREATE TABLE "od_channel_transactions" (
     "deleted_at" timestamptz DEFAULT NULL
 );
 
-ALTER TABLE "od_product_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "od_transaction_statuses" ("id");
-ALTER TABLE "od_product_transactions" ADD FOREIGN KEY ("transaction_type_id") REFERENCES "od_transaction_types" ("id");
-ALTER TABLE "od_product_transactions" ADD FOREIGN KEY ("progress_event_id") REFERENCES "od_progress_events" ("id");
+ALTER TABLE "product_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "transaction_statuses" ("id");
+ALTER TABLE "product_transactions" ADD FOREIGN KEY ("transaction_type_id") REFERENCES "transaction_types" ("id");
+ALTER TABLE "product_transactions" ADD FOREIGN KEY ("progress_event_id") REFERENCES "progress_events" ("id");
 
-ALTER TABLE "od_merchant_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "od_transaction_statuses" ("id");
-ALTER TABLE "od_merchant_transactions" ADD FOREIGN KEY ("transaction_type_id") REFERENCES "od_transaction_types" ("id");
-ALTER TABLE "od_merchant_transactions" ADD FOREIGN KEY ("progress_event_id") REFERENCES "od_progress_events" ("id");
+ALTER TABLE "merchant_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "transaction_statuses" ("id");
+ALTER TABLE "merchant_transactions" ADD FOREIGN KEY ("transaction_type_id") REFERENCES "transaction_types" ("id");
+ALTER TABLE "merchant_transactions" ADD FOREIGN KEY ("progress_event_id") REFERENCES "progress_events" ("id");
 
-ALTER TABLE "od_channel_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "od_transaction_statuses" ("id");
-ALTER TABLE "od_channel_transactions" ADD FOREIGN KEY ("transaction_type_id") REFERENCES "od_transaction_types" ("id");
-ALTER TABLE "od_channel_transactions" ADD FOREIGN KEY ("progress_event_id") REFERENCES "od_progress_events" ("id");
+ALTER TABLE "channel_transactions" ADD FOREIGN KEY ("transaction_status_id") REFERENCES "transaction_statuses" ("id");
+ALTER TABLE "channel_transactions" ADD FOREIGN KEY ("transaction_type_id") REFERENCES "transaction_types" ("id");
+ALTER TABLE "channel_transactions" ADD FOREIGN KEY ("progress_event_id") REFERENCES "progress_events" ("id");
 
-ALTER TABLE "od_progress_events" ADD FOREIGN KEY ("progress_event_type_id") REFERENCES "od_progress_events" ("id");
+ALTER TABLE "progress_events" ADD FOREIGN KEY ("progress_event_type_id") REFERENCES "progress_events" ("id");
