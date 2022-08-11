@@ -18,6 +18,7 @@ func NewServer(store *db.Store) *Server {
 
 	apiTypes := router.Group("/api/transaction-types")
 	apiStatus := router.Group("/api/transaction-statuses")
+	apiEventTypes := router.Group("/api/progress-event-types")
 
 	apiTypes.POST("/", server.createTransactionType)
 	apiTypes.GET("/:id", server.viewTransactionType)
@@ -30,6 +31,12 @@ func NewServer(store *db.Store) *Server {
 	apiStatus.GET("/", server.allTransactionStatus)
 	apiStatus.PUT("/:id", server.updateTransactionStatus)
 	apiStatus.DELETE("/:id", server.deleteTransactionStatus)
+
+	apiEventTypes.POST("/", server.createProgressEventType)
+	apiEventTypes.GET("/:id", server.viewProgressEventType)
+	apiEventTypes.GET("/", server.allProgressEventTypeRequest)
+	apiEventTypes.PUT("/:id", server.updateProgressEventType)
+	apiEventTypes.DELETE("/:id", server.deleteProgressEventType)
 
 	server.router = router
 	return server
