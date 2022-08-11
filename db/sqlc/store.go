@@ -1,9 +1,7 @@
 package db
 
 import (
-	"context"
 	"database/sql"
-	"fmt"
 )
 
 // Store provides all functions to execute db queries and transactions
@@ -19,24 +17,24 @@ func NewStore(db *sql.DB) *Store {
 	}
 }
 
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
-	tx, err := store.db.BeginTx(ctx, nil)
+// func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+// 	tx, err := store.db.BeginTx(ctx, nil)
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	q := New(tx)
-	err = fn(q)
-	if err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("transaction Error %s %v", err, rbErr)
-		}
+// 	q := New(tx)
+// 	err = fn(q)
+// 	if err != nil {
+// 		if rbErr := tx.Rollback(); rbErr != nil {
+// 			return fmt.Errorf("transaction Error %s %v", err, rbErr)
+// 		}
 
-		return err
-	}
+// 		return err
+// 	}
 
-	return tx.Commit()
-}
+// 	return tx.Commit()
+// }
 
 // func (store *Store)

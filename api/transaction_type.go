@@ -8,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CreateRequest struct {
+type CreateTypeRequest struct {
 	TypeName        string `json:"type_name" binding:"required"`
 	TypeDescription string `json:"type_description" binding:"required"`
 }
 
 func (server *Server) createTransactionType(ctx *gin.Context) {
-	var request CreateRequest
+	var request CreateTypeRequest
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -35,12 +35,12 @@ func (server *Server) createTransactionType(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, data)
 }
 
-type ViewRequest struct {
+type ViewTypeRequest struct {
 	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
 func (server *Server) viewTransactionType(ctx *gin.Context) {
-	var request ViewRequest
+	var request ViewTypeRequest
 
 	if err := ctx.ShouldBindUri(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -60,13 +60,13 @@ func (server *Server) viewTransactionType(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, data)
 }
 
-type FetchRequest struct {
+type FetchTypeRequest struct {
 	PageID   int32 `form:"page" binding:"required,min=1"`
-	PageSize int32 `form:"size" binding:"required,min=10,max=20"`
+	PageSize int32 `form:"size" binding:"required,min=10,max=100"`
 }
 
 func (server *Server) allTransactionType(ctx *gin.Context) {
-	var request FetchRequest
+	var request FetchTypeRequest
 
 	if err := ctx.ShouldBindQuery(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -91,14 +91,14 @@ func (server *Server) allTransactionType(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, data)
 }
 
-type UpdateRequest struct {
+type UpdateTypeRequest struct {
 	ID              int64  `uri:"id" binding:"required,min=1"`
 	TypeName        string `json:"type_name"`
 	TypeDescription string `json:"type_description"`
 }
 
 func (server *Server) updateTransactionType(ctx *gin.Context) {
-	var request UpdateRequest
+	var request UpdateTypeRequest
 
 	if err := ctx.ShouldBindUri(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -125,12 +125,12 @@ func (server *Server) updateTransactionType(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, data)
 }
 
-type DeleteRequest struct {
+type DeleteTypeRequest struct {
 	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
 func (server *Server) deleteTransactionType(ctx *gin.Context) {
-	var request DeleteRequest
+	var request DeleteTypeRequest
 
 	if err := ctx.ShouldBindUri(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

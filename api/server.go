@@ -17,12 +17,19 @@ func NewServer(store *db.Store) *Server {
 	router := gin.Default()
 
 	apiTypes := router.Group("/api/transaction-types")
+	apiStatus := router.Group("/api/transaction-statuses")
 
 	apiTypes.POST("/", server.createTransactionType)
 	apiTypes.GET("/:id", server.viewTransactionType)
 	apiTypes.GET("/", server.allTransactionType)
 	apiTypes.PUT("/:id", server.updateTransactionType)
 	apiTypes.DELETE("/:id", server.deleteTransactionType)
+
+	apiStatus.POST("/", server.createTransactionStatus)
+	apiStatus.GET("/:id", server.viewTransactionStatus)
+	apiStatus.GET("/", server.allTransactionStatus)
+	apiStatus.PUT("/:id", server.updateTransactionStatus)
+	apiStatus.DELETE("/:id", server.deleteTransactionStatus)
 
 	server.router = router
 	return server
