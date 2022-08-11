@@ -6,18 +6,19 @@ import (
 	"os"
 	"testing"
 
+	"github.com/arywr/od-reconciliation-api/util"
 	_ "github.com/lib/pq"
 )
 
 var testQueries *Queries
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:odPass@localhost:5432/od_reconciliation?sslmode=disable"
-)
-
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("Database connection failed!")
 	}

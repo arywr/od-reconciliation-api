@@ -28,5 +28,5 @@ WHERE id = $1 LIMIT 1;
 SELECT *
 FROM od_transaction_types
 ORDER BY created_at
-LIMIT $1
-OFFSET $2;
+OFFSET $1
+LIMIT $2;

@@ -13,22 +13,22 @@ const allTransactionType = `-- name: AllTransactionType :many
 SELECT id, type_name, type_description, created_at, updated_at, deleted_at
 FROM od_transaction_types
 ORDER BY created_at
-LIMIT $1
-OFFSET $2
+OFFSET $1
+LIMIT $2
 `
 
 type AllTransactionTypeParams struct {
-	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
 }
 
 func (q *Queries) AllTransactionType(ctx context.Context, arg AllTransactionTypeParams) ([]OdTransactionType, error) {
-	rows, err := q.db.QueryContext(ctx, allTransactionType, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, allTransactionType, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []OdTransactionType
+	items := []OdTransactionType{}
 	for rows.Next() {
 		var i OdTransactionType
 		if err := rows.Scan(
