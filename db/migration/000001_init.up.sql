@@ -49,8 +49,8 @@ CREATE TABLE "product_transactions" (
     "transaction_id" varchar NOT NULL,
     "transaction_date" date NOT NULL DEFAULT(now()),
     "transaction_datetime" timestamptz NOT NULL DEFAULT(now()),
-    "collected_amount" float DEFAULT 0,
-    "settled_amount" float DEFAULT 0,
+    "collected_amount" float DEFAULT 0 NOT NULL,
+    "settled_amount" float DEFAULT 0 NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
     "deleted_at" timestamptz DEFAULT NULL
@@ -66,8 +66,8 @@ CREATE TABLE "merchant_transactions" (
     "transaction_id" varchar NOT NULL,
     "transaction_date" date NOT NULL DEFAULT(now()),
     "transaction_datetime" timestamptz NOT NULL DEFAULT(now()),
-    "collected_amount" float DEFAULT 0,
-    "settled_amount" float DEFAULT 0,
+    "collected_amount" float DEFAULT 0 NOT NULL,
+    "settled_amount" float DEFAULT 0 NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
     "deleted_at" timestamptz DEFAULT NULL
@@ -83,8 +83,8 @@ CREATE TABLE "channel_transactions" (
     "transaction_id" varchar NOT NULL,
     "transaction_date" date NOT NULL DEFAULT(now()),
     "transaction_datetime" timestamptz NOT NULL DEFAULT(now()),
-    "collected_amount" float DEFAULT 0,
-    "settled_amount" float DEFAULT 0,
+    "collected_amount" float DEFAULT 0 NOT NULL,
+    "settled_amount" float DEFAULT 0 NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT(now()),
     "updated_at" timestamptz NOT NULL DEFAULT(now()),
     "deleted_at" timestamptz DEFAULT NULL
