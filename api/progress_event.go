@@ -10,13 +10,16 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type CreateStatusRequest struct {
-	StatusName        string `json:"status_name" binding:"required"`
-	StatusDescription string `json:"status_description" binding:"required"`
+type CreateProgressEventRequest struct {
+	ProgressEventTypeID int16   `json:"progress_event_type_id" binding:"required,min=1"`
+	ProgressName        string  `json:"progress_name" binding:"required"`
+	Status              string  `json:"status" binding:"required"`
+	Percentage          float64 `json:"percentage" binding:"required,min=0"`
+	File                string  `json:"file"`
 }
 
-func (server *Server) createTransactionStatus(ctx *gin.Context) {
-	var req CreateStatusRequest
+func (server *Server) createProgressEvent(ctx *gin.Context) {
+	var req CreateProgressEventRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		var valError validator.ValidationErrors
@@ -26,12 +29,15 @@ func (server *Server) createTransactionStatus(ctx *gin.Context) {
 		}
 	}
 
-	args := db.CreateTransactionStatusParams{
-		StatusName:        req.StatusName,
-		StatusDescription: req.StatusDescription,
+	args := db.CreateProgressEventParams{
+		ProgressEventTypeID: req.ProgressEventTypeID,
+		ProgressName:        req.ProgressName,
+		Status:              req.Status,
+		Percentage:          req.Percentage,
+		File:                req.File,
 	}
 
-	data, err := server.store.CreateTransactionStatus(ctx, args)
+	data, err := server.store.CreateProgressEvent(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
 		return
@@ -41,12 +47,14 @@ func (server *Server) createTransactionStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-type ViewStatusRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+type UpdateProgressEventRequest struct {
+	Status     string  `json:"status"`
+	Percentage float64 `json:"percentage"`
+	ID         int64   `uri:"id" binding:"required,min=1"`
 }
 
-func (server *Server) viewTransactionStatus(ctx *gin.Context) {
-	var req ViewStatusRequest
+func (server *Server) updateProgressEvent(ctx *gin.Context) {
+	var req UpdateProgressEventRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		var valError validator.ValidationErrors
@@ -56,7 +64,47 @@ func (server *Server) viewTransactionStatus(ctx *gin.Context) {
 		}
 	}
 
-	data, err := server.store.ViewTransactionStatus(ctx, req.ID)
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		var valError validator.ValidationErrors
+		if errors.As(err, &valError) {
+			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
+			return
+		}
+	}
+
+	args := db.UpdateProgressTxParams{
+		ID:         req.ID,
+		Percentage: req.Percentage,
+		Status:     req.Status,
+	}
+
+	data, err := server.store.UpdateProgressTx(ctx, args)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+		return
+	}
+
+	response := APIResponse(http.StatusOK, "OK", data)
+	ctx.JSON(http.StatusOK, response)
+}
+
+type ViewProgressEventRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) viewProgressEvent(ctx *gin.Context) {
+	var req ViewProgressEventRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		var valError validator.ValidationErrors
+		if errors.As(err, &valError) {
+			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
+			return
+		}
+		return
+	}
+
+	data, err := server.store.ViewProgressEvent(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))
@@ -70,13 +118,13 @@ func (server *Server) viewTransactionStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-type FetchStatusRequest struct {
+type FetchEventProgressRequest struct {
 	PageID   int32 `form:"page" binding:"required,min=1"`
 	PageSize int32 `form:"size" binding:"required,min=10,max=100"`
 }
 
-func (server *Server) allTransactionStatus(ctx *gin.Context) {
-	var req FetchStatusRequest
+func (server *Server) allProgressEvent(ctx *gin.Context) {
+	var req FetchEventProgressRequest
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		var valError validator.ValidationErrors
@@ -86,12 +134,12 @@ func (server *Server) allTransactionStatus(ctx *gin.Context) {
 		}
 	}
 
-	args := db.AllTransactionStatusParams{
+	args := db.AllProgressEventParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
 
-	data, err := server.store.AllTransactionStatus(ctx, args)
+	data, err := server.store.AllProgressEvent(ctx, args)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))
@@ -105,14 +153,8 @@ func (server *Server) allTransactionStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-type UpdateStatusRequest struct {
-	ID                int64  `uri:"id" binding:"required,min=1"`
-	StatusName        string `json:"status_name"`
-	StatusDescription string `json:"status_description"`
-}
-
-func (server *Server) updateTransactionStatus(ctx *gin.Context) {
-	var req UpdateStatusRequest
+func (server *Server) deleteProgressEvent(ctx *gin.Context) {
+	var req ViewProgressEventRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		var valError validator.ValidationErrors
@@ -122,46 +164,7 @@ func (server *Server) updateTransactionStatus(ctx *gin.Context) {
 		}
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		var valError validator.ValidationErrors
-		if errors.As(err, &valError) {
-			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
-			return
-		}
-	}
-
-	args := db.UpdateTransactionStatusParams{
-		ID:                req.ID,
-		StatusName:        req.StatusName,
-		StatusDescription: req.StatusDescription,
-	}
-
-	data, err := server.store.UpdateTransactionStatus(ctx, args)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
-		return
-	}
-
-	response := APIResponse(http.StatusOK, "OK", data)
-	ctx.JSON(http.StatusOK, response)
-}
-
-type DeleteStatusRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-func (server *Server) deleteTransactionStatus(ctx *gin.Context) {
-	var request DeleteStatusRequest
-
-	if err := ctx.ShouldBindUri(&request); err != nil {
-		var valError validator.ValidationErrors
-		if errors.As(err, &valError) {
-			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
-			return
-		}
-	}
-
-	err := server.store.DeleteTransactionStatus(ctx, request.ID)
+	err := server.store.DeleteProgressEvent(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))

@@ -10,3 +10,17 @@ packages:
     emit_exact_table_names: false
     emit_prepared_queries: false
     emit_empty_slices: true
+    overrides:
+      - db_type: "timestamptz"
+        go_type:
+          import: "time"
+          package: "time"
+          type: "Time"
+          pointer: true
+        nullable: true
+      - go_type: "github.com/gobuffalo/nulls.String"
+        db_type: "pg_catalog.varchar"
+        nullable: true
+      - db_type: "float"
+        nullable: true
+        go_type: "github.com/guregu/null.Float"

@@ -19,6 +19,7 @@ func NewServer(store *db.Store) *Server {
 	apiTypes := router.Group("/api/transaction-types")
 	apiStatus := router.Group("/api/transaction-statuses")
 	apiEventTypes := router.Group("/api/progress-event-types")
+	apiProgressEvents := router.Group("/api/progress-events")
 
 	apiTypes.POST("/", server.createTransactionType)
 	apiTypes.GET("/:id", server.viewTransactionType)
@@ -33,10 +34,17 @@ func NewServer(store *db.Store) *Server {
 	apiStatus.DELETE("/:id", server.deleteTransactionStatus)
 
 	apiEventTypes.POST("/", server.createProgressEventType)
-	apiEventTypes.GET("/:id", server.viewProgressEventType)
+	apiEventTypes.GET("/:id", server.
+		viewProgressEventType)
 	apiEventTypes.GET("/", server.allProgressEventTypeRequest)
 	apiEventTypes.PUT("/:id", server.updateProgressEventType)
 	apiEventTypes.DELETE("/:id", server.deleteProgressEventType)
+
+	apiProgressEvents.POST("/", server.createProgressEvent)
+	apiProgressEvents.PUT("/:id", server.updateProgressEvent)
+	apiProgressEvents.GET("/:id", server.viewProgressEvent)
+	apiProgressEvents.GET("/", server.allProgressEvent)
+	apiProgressEvents.DELETE("/:id", server.deleteProgressEvent)
 
 	server.router = router
 	return server
@@ -45,8 +53,4 @@ func NewServer(store *db.Store) *Server {
 // Starting HTTP server
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
-}
-
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
 }

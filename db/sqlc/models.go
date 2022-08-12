@@ -6,60 +6,17 @@ package db
 
 import (
 	"database/sql"
-	"database/sql/driver"
-	"fmt"
 	"time"
+
+	"github.com/gobuffalo/nulls"
 )
-
-type ProgressStatusEnum string
-
-const (
-	ProgressStatusEnumOnprocess ProgressStatusEnum = "on process"
-	ProgressStatusEnumCompleted ProgressStatusEnum = "completed"
-	ProgressStatusEnumFailed    ProgressStatusEnum = "failed"
-)
-
-func (e *ProgressStatusEnum) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = ProgressStatusEnum(s)
-	case string:
-		*e = ProgressStatusEnum(s)
-	default:
-		return fmt.Errorf("unsupported scan type for ProgressStatusEnum: %T", src)
-	}
-	return nil
-}
-
-type NullProgressStatusEnum struct {
-	ProgressStatusEnum ProgressStatusEnum
-	Valid              bool // Valid is true if String is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullProgressStatusEnum) Scan(value interface{}) error {
-	if value == nil {
-		ns.ProgressStatusEnum, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.ProgressStatusEnum.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullProgressStatusEnum) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return ns.ProgressStatusEnum, nil
-}
 
 type ChannelTransaction struct {
 	ID                   int64           `json:"id"`
 	TransactionStatusID  int16           `json:"transaction_status_id"`
 	TransactionTypeID    int16           `json:"transaction_type_id"`
 	ProgressEventID      int16           `json:"progress_event_id"`
-	ChannelTransactionID sql.NullString  `json:"channel_transaction_id"`
+	ChannelTransactionID nulls.String    `json:"channel_transaction_id"`
 	OwnerID              string          `json:"owner_id"`
 	TransactionID        string          `json:"transaction_id"`
 	TransactionDate      time.Time       `json:"transaction_date"`
@@ -68,7 +25,7 @@ type ChannelTransaction struct {
 	SettledAmount        sql.NullFloat64 `json:"settled_amount"`
 	CreatedAt            time.Time       `json:"created_at"`
 	UpdatedAt            time.Time       `json:"updated_at"`
-	DeletedAt            sql.NullTime    `json:"deleted_at"`
+	DeletedAt            *time.Time      `json:"deleted_at"`
 }
 
 type MerchantTransaction struct {
@@ -76,7 +33,7 @@ type MerchantTransaction struct {
 	TransactionStatusID   int16           `json:"transaction_status_id"`
 	TransactionTypeID     int16           `json:"transaction_type_id"`
 	ProgressEventID       int16           `json:"progress_event_id"`
-	MerchantTransactionID sql.NullString  `json:"merchant_transaction_id"`
+	MerchantTransactionID nulls.String    `json:"merchant_transaction_id"`
 	OwnerID               string          `json:"owner_id"`
 	TransactionID         string          `json:"transaction_id"`
 	TransactionDate       time.Time       `json:"transaction_date"`
@@ -85,7 +42,7 @@ type MerchantTransaction struct {
 	SettledAmount         sql.NullFloat64 `json:"settled_amount"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
-	DeletedAt             sql.NullTime    `json:"deleted_at"`
+	DeletedAt             *time.Time      `json:"deleted_at"`
 }
 
 type ProductTransaction struct {
@@ -93,9 +50,9 @@ type ProductTransaction struct {
 	TransactionStatusID   int16           `json:"transaction_status_id"`
 	TransactionTypeID     int16           `json:"transaction_type_id"`
 	ProgressEventID       int16           `json:"progress_event_id"`
-	ProductTransactionID  sql.NullString  `json:"product_transaction_id"`
-	MerchantTransactionID sql.NullString  `json:"merchant_transaction_id"`
-	ChannelTransactionID  sql.NullString  `json:"channel_transaction_id"`
+	ProductTransactionID  nulls.String    `json:"product_transaction_id"`
+	MerchantTransactionID nulls.String    `json:"merchant_transaction_id"`
+	ChannelTransactionID  nulls.String    `json:"channel_transaction_id"`
 	OwnerID               string          `json:"owner_id"`
 	TransactionID         string          `json:"transaction_id"`
 	TransactionDate       time.Time       `json:"transaction_date"`
@@ -104,44 +61,44 @@ type ProductTransaction struct {
 	SettledAmount         sql.NullFloat64 `json:"settled_amount"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
-	DeletedAt             sql.NullTime    `json:"deleted_at"`
+	DeletedAt             *time.Time      `json:"deleted_at"`
 }
 
 type ProgressEvent struct {
-	ID                  int64                  `json:"id"`
-	ProgressEventTypeID int16                  `json:"progress_event_type_id"`
-	ProgressName        string                 `json:"progress_name"`
-	Status              NullProgressStatusEnum `json:"status"`
-	Percentage          float64                `json:"percentage"`
-	File                sql.NullString         `json:"file"`
-	CreatedAt           time.Time              `json:"created_at"`
-	UpdatedAt           time.Time              `json:"updated_at"`
-	DeletedAt           sql.NullTime           `json:"deleted_at"`
+	ID                  int64      `json:"id"`
+	ProgressEventTypeID int16      `json:"progress_event_type_id"`
+	ProgressName        string     `json:"progress_name"`
+	Status              string     `json:"status"`
+	Percentage          float64    `json:"percentage"`
+	File                string     `json:"file"`
+	CreatedAt           time.Time  `json:"created_at"`
+	UpdatedAt           time.Time  `json:"updated_at"`
+	DeletedAt           *time.Time `json:"deleted_at"`
 }
 
 type ProgressEventType struct {
-	ID                           int64        `json:"id"`
-	ProgressEventTypeName        string       `json:"progress_event_type_name"`
-	ProgressEventTypeDescription string       `json:"progress_event_type_description"`
-	CreatedAt                    time.Time    `json:"created_at"`
-	UpdatedAt                    time.Time    `json:"updated_at"`
-	DeletedAt                    sql.NullTime `json:"deleted_at"`
+	ID                           int64      `json:"id"`
+	ProgressEventTypeName        string     `json:"progress_event_type_name"`
+	ProgressEventTypeDescription string     `json:"progress_event_type_description"`
+	CreatedAt                    time.Time  `json:"created_at"`
+	UpdatedAt                    time.Time  `json:"updated_at"`
+	DeletedAt                    *time.Time `json:"deleted_at"`
 }
 
 type TransactionStatus struct {
-	ID                int64        `json:"id"`
-	StatusName        string       `json:"status_name"`
-	StatusDescription string       `json:"status_description"`
-	CreatedAt         time.Time    `json:"created_at"`
-	UpdatedAt         time.Time    `json:"updated_at"`
-	DeletedAt         sql.NullTime `json:"deleted_at"`
+	ID                int64      `json:"id"`
+	StatusName        string     `json:"status_name"`
+	StatusDescription string     `json:"status_description"`
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
+	DeletedAt         *time.Time `json:"deleted_at"`
 }
 
 type TransactionType struct {
-	ID              int64        `json:"id"`
-	TypeName        string       `json:"type_name"`
-	TypeDescription string       `json:"type_description"`
-	CreatedAt       time.Time    `json:"created_at"`
-	UpdatedAt       time.Time    `json:"updated_at"`
-	DeletedAt       sql.NullTime `json:"deleted_at"`
+	ID              int64      `json:"id"`
+	TypeName        string     `json:"type_name"`
+	TypeDescription string     `json:"type_description"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+	DeletedAt       *time.Time `json:"deleted_at"`
 }
