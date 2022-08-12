@@ -11,7 +11,7 @@ import (
 )
 
 type CreateEventTypeRequest struct {
-	EventName        string `json:"event_name" binding:"required"`
+	EventName        string `json:"event_name" binding:"required,oneof=read recon others"`
 	EventDescription string `json:"event_description" binding:"required"`
 }
 

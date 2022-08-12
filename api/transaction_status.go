@@ -11,7 +11,7 @@ import (
 )
 
 type CreateStatusRequest struct {
-	StatusName        string `json:"status_name" binding:"required"`
+	StatusName        string `json:"status_name" binding:"required,oneof=unknown partially-match fully-match dispute"`
 	StatusDescription string `json:"status_description" binding:"required"`
 }
 
