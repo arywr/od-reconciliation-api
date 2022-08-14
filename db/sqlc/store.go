@@ -4,7 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
+	"runtime"
+	"strconv"
+	"sync"
 	"time"
+
+	"github.com/arywr/od-reconciliation-api/helper"
+	_ "github.com/arywr/od-reconciliation-api/helper"
+	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/nulls"
 )
 
 // Store provides all functions to execute db queries and transactions
@@ -61,7 +72,7 @@ type UpdateProgressTxResult struct {
 	File              string                      `json:"file"`
 	CreatedAt         time.Time                   `json:"created_at"`
 	UpdatedAt         time.Time                   `json:"updated_at"`
-	DeletedAt         *time.Time                  `json:"deleted_at"`
+	DeletedAt         nulls.Time                  `json:"deleted_at"`
 }
 
 func (store *Store) UpdateProgressTx(ctx context.Context, arg UpdateProgressTxParams) (UpdateProgressTxResult, error) {
@@ -102,4 +113,172 @@ func (store *Store) UpdateProgressTx(ctx context.Context, arg UpdateProgressTxPa
 	})
 
 	return result, err
+}
+
+type ProductTrxCSVParams struct {
+	Day        int                   `form:"day"`
+	PlatformId string                `form:"platform_id" binding:"required"`
+	File       *multipart.FileHeader `form:"file"`
+}
+
+type SaveTrxCSVRequest struct {
+	FileName   string
+	PlatformID string
+	ProgressID int64
+	Counter    int64
+}
+
+func (store *Store) CreateProductTransactionCSV(ctx *gin.Context, args SaveTrxCSVRequest) {
+	currentTime := time.Now()
+
+	csvReader, csvFile, err := helper.ReadCSVFile(args.FileName)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	defer csvFile.Close()
+
+	isHeader := true
+	var rows []CreateProductTransactionParams
+
+	for {
+		row, err := csvReader.Read()
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			break
+		}
+
+		if isHeader {
+			isHeader = false
+			continue
+		}
+
+		trxDate, _ := time.Parse("2006-01-02", row[2])
+		trxDatetime, _ := time.Parse("2006-01-02 15:04:05", row[2]+" "+row[3])
+		collect, _ := strconv.ParseFloat(row[11], 64)
+		settled, _ := strconv.ParseFloat(row[11], 64)
+
+		transaction := CreateProductTransactionParams{
+			OwnerID:              args.PlatformID,
+			TransactionStatusID:  1,
+			TransactionTypeID:    1,
+			ProductTransactionID: nulls.String{String: row[4], Valid: true},
+			TransactionDate:      trxDate,
+			TransactionDatetime:  trxDatetime,
+			CollectedAmount:      collect,
+			SettledAmount:        settled,
+			CreatedAt:            currentTime,
+			UpdatedAt:            currentTime,
+		}
+		rows = append(rows, transaction)
+	}
+
+	jobs := generateIndex(rows)
+	worker := runtime.NumCPU()
+	result := TestingInsert(store, ctx, jobs, worker)
+
+	counterSuccess := 0
+	for res := range result {
+		if res.ID == 0 {
+			log.Println("Has Error")
+		} else {
+			counterSuccess++
+		}
+
+		if counterSuccess%100 == 0 {
+			progressArgs := UpdateProgressParams{
+				ID:         args.ProgressID,
+				Percentage: float64(counterSuccess) / float64(args.Counter) * 100,
+			}
+
+			store.Queries.UpdateProgress(ctx, progressArgs)
+		}
+	}
+
+	progressArgs := UpdateProgressParams{
+		ID:         args.ProgressID,
+		Status:     "completed",
+		Percentage: 100,
+	}
+
+	store.Queries.UpdateProgress(ctx, progressArgs)
+}
+
+func generateIndex(store []CreateProductTransactionParams) <-chan CreateProductTransactionParams {
+	result := make(chan CreateProductTransactionParams)
+
+	go func() {
+		for _, transaction := range store {
+			result <- transaction
+		}
+
+		close(result)
+	}()
+
+	return result
+}
+
+func TestingInsert(
+	store *Store,
+	ctx *gin.Context,
+	jobs <-chan CreateProductTransactionParams,
+	worker int,
+) <-chan ProductTransaction {
+	result := make(chan ProductTransaction)
+
+	wg := new(sync.WaitGroup)
+	wg.Add(worker)
+
+	go func() {
+		for i := 0; i < worker; i++ {
+			go func() {
+				for job := range jobs {
+					response := InsertFromExcel(store, ctx, job)
+					result <- response
+				}
+				wg.Done()
+			}()
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	return result
+}
+
+func InsertFromExcel(store *Store, ctx *gin.Context, transaction CreateProductTransactionParams) ProductTransaction {
+	var response ProductTransaction
+
+	for {
+		var outerError error
+		func(outerError *error) {
+			defer func() {
+				if err := recover(); err != nil {
+					*outerError = fmt.Errorf("%v", err)
+					log.Println(err)
+				}
+			}()
+
+			store.execTx(ctx, func(q *Queries) error {
+				txRes, errors := q.CreateProductTransaction(ctx, transaction)
+				if errors != nil {
+					return errors
+				}
+
+				response = txRes
+				return nil
+			})
+		}(&outerError)
+		if outerError == nil {
+			break
+		}
+	}
+
+	return response
 }

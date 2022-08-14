@@ -14,46 +14,35 @@ import (
 
 const allProductTransaction = `-- name: AllProductTransaction :many
 SELECT
-    p.id, p.product_transaction_id, p.merchant_transaction_id, p.channel_transaction_id, p.owner_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at,
-    p.progress_event_id, q.progress_event_type_id, q.progress_name, q.status, q.percentage, q.file,
+    p.id, p.product_transaction_id, p.merchant_transaction_id, p.channel_transaction_id, p.owner_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
     p.transaction_status_id, s.status_name, s.status_description,
-    p.transaction_type_id, r.type_name, r.type_description,
-    t.progress_event_type_name, t.progress_event_type_description
+    p.transaction_type_id, r.type_name, r.type_description
 FROM product_transactions AS p
-JOIN progress_events AS q ON p.progress_event_id = q.id
 JOIN transaction_types AS r ON p.transaction_type_id = r.id
 JOIN transaction_statuses AS s ON p.transaction_status_id = s.id
-JOIN progress_event_types AS t ON q.progress_event_type_id = t.id
 `
 
 type AllProductTransactionRow struct {
-	ID                           int64        `json:"id"`
-	ProductTransactionID         nulls.String `json:"product_transaction_id"`
-	MerchantTransactionID        nulls.String `json:"merchant_transaction_id"`
-	ChannelTransactionID         nulls.String `json:"channel_transaction_id"`
-	OwnerID                      string       `json:"owner_id"`
-	TransactionID                string       `json:"transaction_id"`
-	TransactionDate              time.Time    `json:"transaction_date"`
-	TransactionDatetime          time.Time    `json:"transaction_datetime"`
-	CollectedAmount              float64      `json:"collected_amount"`
-	SettledAmount                float64      `json:"settled_amount"`
-	CreatedAt                    time.Time    `json:"created_at"`
-	UpdatedAt                    time.Time    `json:"updated_at"`
-	DeletedAt                    *time.Time   `json:"deleted_at"`
-	ProgressEventID              int16        `json:"progress_event_id"`
-	ProgressEventTypeID          int16        `json:"progress_event_type_id"`
-	ProgressName                 string       `json:"progress_name"`
-	Status                       string       `json:"status"`
-	Percentage                   float64      `json:"percentage"`
-	File                         string       `json:"file"`
-	TransactionStatusID          int16        `json:"transaction_status_id"`
-	StatusName                   string       `json:"status_name"`
-	StatusDescription            string       `json:"status_description"`
-	TransactionTypeID            int16        `json:"transaction_type_id"`
-	TypeName                     string       `json:"type_name"`
-	TypeDescription              string       `json:"type_description"`
-	ProgressEventTypeName        string       `json:"progress_event_type_name"`
-	ProgressEventTypeDescription string       `json:"progress_event_type_description"`
+	ID                    int64        `json:"id"`
+	ProductTransactionID  nulls.String `json:"product_transaction_id"`
+	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
+	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
+	OwnerID               string       `json:"owner_id"`
+	TransactionID         string       `json:"transaction_id"`
+	TransactionDate       time.Time    `json:"transaction_date"`
+	TransactionDatetime   time.Time    `json:"transaction_datetime"`
+	CollectedAmount       float64      `json:"collected_amount"`
+	SettledAmount         float64      `json:"settled_amount"`
+	CreatedAt             time.Time    `json:"created_at"`
+	UpdatedAt             time.Time    `json:"updated_at"`
+	DeletedAt             nulls.Time   `json:"deleted_at"`
+	ProgressEventID       nulls.Int32  `json:"progress_event_id"`
+	TransactionStatusID   int16        `json:"transaction_status_id"`
+	StatusName            string       `json:"status_name"`
+	StatusDescription     string       `json:"status_description"`
+	TransactionTypeID     int16        `json:"transaction_type_id"`
+	TypeName              string       `json:"type_name"`
+	TypeDescription       string       `json:"type_description"`
 }
 
 func (q *Queries) AllProductTransaction(ctx context.Context) ([]AllProductTransactionRow, error) {
@@ -80,19 +69,12 @@ func (q *Queries) AllProductTransaction(ctx context.Context) ([]AllProductTransa
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ProgressEventID,
-			&i.ProgressEventTypeID,
-			&i.ProgressName,
-			&i.Status,
-			&i.Percentage,
-			&i.File,
 			&i.TransactionStatusID,
 			&i.StatusName,
 			&i.StatusDescription,
 			&i.TransactionTypeID,
 			&i.TypeName,
 			&i.TypeDescription,
-			&i.ProgressEventTypeName,
-			&i.ProgressEventTypeDescription,
 		); err != nil {
 			return nil, err
 		}
@@ -115,7 +97,7 @@ INSERT INTO product_transactions (
     transaction_datetime, collected_amount, settled_amount, 
     created_at, updated_at, deleted_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+    $1, $2, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 )
 RETURNING id, transaction_status_id, transaction_type_id, progress_event_id, product_transaction_id, merchant_transaction_id, channel_transaction_id, owner_id, transaction_id, transaction_date, transaction_datetime, collected_amount, settled_amount, created_at, updated_at, deleted_at
 `
@@ -123,7 +105,6 @@ RETURNING id, transaction_status_id, transaction_type_id, progress_event_id, pro
 type CreateProductTransactionParams struct {
 	TransactionStatusID   int16        `json:"transaction_status_id"`
 	TransactionTypeID     int16        `json:"transaction_type_id"`
-	ProgressEventID       int16        `json:"progress_event_id"`
 	ProductTransactionID  nulls.String `json:"product_transaction_id"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
 	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
@@ -135,14 +116,13 @@ type CreateProductTransactionParams struct {
 	SettledAmount         float64      `json:"settled_amount"`
 	CreatedAt             time.Time    `json:"created_at"`
 	UpdatedAt             time.Time    `json:"updated_at"`
-	DeletedAt             *time.Time   `json:"deleted_at"`
+	DeletedAt             nulls.Time   `json:"deleted_at"`
 }
 
 func (q *Queries) CreateProductTransaction(ctx context.Context, arg CreateProductTransactionParams) (ProductTransaction, error) {
 	row := q.db.QueryRowContext(ctx, createProductTransaction,
 		arg.TransactionStatusID,
 		arg.TransactionTypeID,
-		arg.ProgressEventID,
 		arg.ProductTransactionID,
 		arg.MerchantTransactionID,
 		arg.ChannelTransactionID,

@@ -24,7 +24,7 @@ type ChannelTransaction struct {
 	SettledAmount        float64      `json:"settled_amount"`
 	CreatedAt            time.Time    `json:"created_at"`
 	UpdatedAt            time.Time    `json:"updated_at"`
-	DeletedAt            *time.Time   `json:"deleted_at"`
+	DeletedAt            nulls.Time   `json:"deleted_at"`
 }
 
 type MerchantTransaction struct {
@@ -41,14 +41,14 @@ type MerchantTransaction struct {
 	SettledAmount         float64      `json:"settled_amount"`
 	CreatedAt             time.Time    `json:"created_at"`
 	UpdatedAt             time.Time    `json:"updated_at"`
-	DeletedAt             *time.Time   `json:"deleted_at"`
+	DeletedAt             nulls.Time   `json:"deleted_at"`
 }
 
 type ProductTransaction struct {
 	ID                    int64        `json:"id"`
 	TransactionStatusID   int16        `json:"transaction_status_id"`
 	TransactionTypeID     int16        `json:"transaction_type_id"`
-	ProgressEventID       int16        `json:"progress_event_id"`
+	ProgressEventID       nulls.Int32  `json:"progress_event_id"`
 	ProductTransactionID  nulls.String `json:"product_transaction_id"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
 	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
@@ -60,7 +60,7 @@ type ProductTransaction struct {
 	SettledAmount         float64      `json:"settled_amount"`
 	CreatedAt             time.Time    `json:"created_at"`
 	UpdatedAt             time.Time    `json:"updated_at"`
-	DeletedAt             *time.Time   `json:"deleted_at"`
+	DeletedAt             nulls.Time   `json:"deleted_at"`
 }
 
 type ProgressEvent struct {
@@ -72,7 +72,7 @@ type ProgressEvent struct {
 	File                string     `json:"file"`
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`
-	DeletedAt           *time.Time `json:"deleted_at"`
+	DeletedAt           nulls.Time `json:"deleted_at"`
 }
 
 type ProgressEventType struct {
@@ -81,7 +81,7 @@ type ProgressEventType struct {
 	ProgressEventTypeDescription string     `json:"progress_event_type_description"`
 	CreatedAt                    time.Time  `json:"created_at"`
 	UpdatedAt                    time.Time  `json:"updated_at"`
-	DeletedAt                    *time.Time `json:"deleted_at"`
+	DeletedAt                    nulls.Time `json:"deleted_at"`
 }
 
 type TransactionStatus struct {
@@ -90,7 +90,7 @@ type TransactionStatus struct {
 	StatusDescription string     `json:"status_description"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
-	DeletedAt         *time.Time `json:"deleted_at"`
+	DeletedAt         nulls.Time `json:"deleted_at"`
 }
 
 type TransactionType struct {
@@ -99,5 +99,5 @@ type TransactionType struct {
 	TypeDescription string     `json:"type_description"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
-	DeletedAt       *time.Time `json:"deleted_at"`
+	DeletedAt       nulls.Time `json:"deleted_at"`
 }

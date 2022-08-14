@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/gobuffalo/nulls"
 )
 
 const allProgressEvent = `-- name: AllProgressEvent :many
@@ -35,7 +37,7 @@ type AllProgressEventRow struct {
 	File                         string     `json:"file"`
 	CreatedAt                    time.Time  `json:"created_at"`
 	UpdatedAt                    time.Time  `json:"updated_at"`
-	DeletedAt                    *time.Time `json:"deleted_at"`
+	DeletedAt                    nulls.Time `json:"deleted_at"`
 	ProgressEventTypeName        string     `json:"progress_event_type_name"`
 	ProgressEventTypeDescription string     `json:"progress_event_type_description"`
 }
@@ -176,7 +178,7 @@ type ViewProgressEventRow struct {
 	File                         string     `json:"file"`
 	CreatedAt                    time.Time  `json:"created_at"`
 	UpdatedAt                    time.Time  `json:"updated_at"`
-	DeletedAt                    *time.Time `json:"deleted_at"`
+	DeletedAt                    nulls.Time `json:"deleted_at"`
 	ProgressEventTypeName        string     `json:"progress_event_type_name"`
 	ProgressEventTypeDescription string     `json:"progress_event_type_description"`
 }
