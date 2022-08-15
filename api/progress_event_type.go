@@ -172,5 +172,5 @@ func (server *Server) deleteProgressEventType(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Succesfully delete")
+	ctx.JSON(http.StatusOK, APIResponse(http.StatusOK, "OK", "Successfully delete"))
 }

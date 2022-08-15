@@ -71,7 +71,7 @@ func ReadCSVFile(file string) (*csv.Reader, *os.File, error) {
 // 	return fileName, nil
 // }
 
-// func DestroyFile(path string) {
-// 	err := os.Remove(path)
-// 	PanicIfError(err)
-// }
+func DestroyFile(path string) error {
+	err := os.Remove(path)
+	return err
+}

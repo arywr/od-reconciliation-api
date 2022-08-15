@@ -11,37 +11,37 @@ import (
 )
 
 type ChannelTransaction struct {
-	ID                   int64        `json:"id"`
-	TransactionStatusID  int16        `json:"transaction_status_id"`
-	TransactionTypeID    int16        `json:"transaction_type_id"`
-	ProgressEventID      int16        `json:"progress_event_id"`
-	ChannelTransactionID nulls.String `json:"channel_transaction_id"`
-	OwnerID              string       `json:"owner_id"`
-	TransactionID        string       `json:"transaction_id"`
-	TransactionDate      time.Time    `json:"transaction_date"`
-	TransactionDatetime  time.Time    `json:"transaction_datetime"`
-	CollectedAmount      float64      `json:"collected_amount"`
-	SettledAmount        float64      `json:"settled_amount"`
-	CreatedAt            time.Time    `json:"created_at"`
-	UpdatedAt            time.Time    `json:"updated_at"`
-	DeletedAt            nulls.Time   `json:"deleted_at"`
+	ID                   int64       `json:"id"`
+	TransactionStatusID  int16       `json:"transaction_status_id"`
+	TransactionTypeID    int16       `json:"transaction_type_id"`
+	ProgressEventID      nulls.Int32 `json:"progress_event_id"`
+	ChannelTransactionID string      `json:"channel_transaction_id"`
+	OwnerID              string      `json:"owner_id"`
+	TransactionID        string      `json:"transaction_id"`
+	TransactionDate      time.Time   `json:"transaction_date"`
+	TransactionDatetime  time.Time   `json:"transaction_datetime"`
+	CollectedAmount      float64     `json:"collected_amount"`
+	SettledAmount        float64     `json:"settled_amount"`
+	CreatedAt            time.Time   `json:"created_at"`
+	UpdatedAt            time.Time   `json:"updated_at"`
+	DeletedAt            nulls.Time  `json:"deleted_at"`
 }
 
 type MerchantTransaction struct {
-	ID                    int64        `json:"id"`
-	TransactionStatusID   int16        `json:"transaction_status_id"`
-	TransactionTypeID     int16        `json:"transaction_type_id"`
-	ProgressEventID       int16        `json:"progress_event_id"`
-	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
-	OwnerID               string       `json:"owner_id"`
-	TransactionID         string       `json:"transaction_id"`
-	TransactionDate       time.Time    `json:"transaction_date"`
-	TransactionDatetime   time.Time    `json:"transaction_datetime"`
-	CollectedAmount       float64      `json:"collected_amount"`
-	SettledAmount         float64      `json:"settled_amount"`
-	CreatedAt             time.Time    `json:"created_at"`
-	UpdatedAt             time.Time    `json:"updated_at"`
-	DeletedAt             nulls.Time   `json:"deleted_at"`
+	ID                    int64       `json:"id"`
+	TransactionStatusID   int16       `json:"transaction_status_id"`
+	TransactionTypeID     int16       `json:"transaction_type_id"`
+	ProgressEventID       nulls.Int32 `json:"progress_event_id"`
+	MerchantTransactionID string      `json:"merchant_transaction_id"`
+	OwnerID               string      `json:"owner_id"`
+	TransactionID         string      `json:"transaction_id"`
+	TransactionDate       time.Time   `json:"transaction_date"`
+	TransactionDatetime   time.Time   `json:"transaction_datetime"`
+	CollectedAmount       float64     `json:"collected_amount"`
+	SettledAmount         float64     `json:"settled_amount"`
+	CreatedAt             time.Time   `json:"created_at"`
+	UpdatedAt             time.Time   `json:"updated_at"`
+	DeletedAt             nulls.Time  `json:"deleted_at"`
 }
 
 type ProductTransaction struct {

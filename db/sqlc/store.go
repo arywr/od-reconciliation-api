@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/arywr/od-reconciliation-api/helper"
-	_ "github.com/arywr/od-reconciliation-api/helper"
 	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/nulls"
 )
@@ -267,6 +266,163 @@ func InsertFromExcel(store *Store, ctx *gin.Context, transaction CreateProductTr
 
 			store.execTx(ctx, func(q *Queries) error {
 				txRes, errors := q.CreateProductTransaction(ctx, transaction)
+				if errors != nil {
+					return errors
+				}
+
+				response = txRes
+				return nil
+			})
+		}(&outerError)
+		if outerError == nil {
+			break
+		}
+	}
+
+	return response
+}
+
+func (store *Store) CreateMerchantTransactionCSV(ctx *gin.Context, args SaveTrxCSVRequest) {
+	currentTime := time.Now()
+
+	csvReader, csvFile, err := helper.ReadCSVFile(args.FileName)
+	if err != nil {
+		return
+	}
+
+	defer csvFile.Close()
+
+	isHeader := true
+	var rows []CreateMerchantTrxParams
+
+	for {
+		row, err := csvReader.Read()
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			break
+		}
+
+		if isHeader {
+			isHeader = false
+			continue
+		}
+
+		trxDate, _ := time.Parse("2006-01-02 15:04:05", row[0])
+		trxDatetime, _ := time.Parse("2006-01-02 15:04:05", row[0])
+		collect, _ := strconv.ParseFloat(row[18], 64)
+		settled, _ := strconv.ParseFloat(row[18], 64)
+
+		trxDateFormat := trxDate.Format("2006-01-02")
+		trxDateFormatParsed, _ := time.Parse("2006-01-02", trxDateFormat)
+
+		transaction := CreateMerchantTrxParams{
+			OwnerID:               args.PlatformID,
+			TransactionStatusID:   1,
+			TransactionTypeID:     1,
+			MerchantTransactionID: row[19],
+			TransactionDate:       trxDateFormatParsed,
+			TransactionDatetime:   trxDatetime,
+			CollectedAmount:       collect,
+			SettledAmount:         settled,
+			CreatedAt:             currentTime,
+			UpdatedAt:             currentTime,
+		}
+		rows = append(rows, transaction)
+	}
+
+	jobs := generateIndexM(rows)
+	worker := runtime.NumCPU()
+	result := TestingInsertM(store, ctx, jobs, worker)
+
+	counterSuccess := 0
+	for res := range result {
+		if res.ID == 0 {
+			log.Println("Has Error")
+		} else {
+			counterSuccess++
+		}
+
+		if counterSuccess%100 == 0 {
+			progressArgs := UpdateProgressParams{
+				ID:         args.ProgressID,
+				Percentage: float64(counterSuccess) / float64(args.Counter) * 100,
+			}
+
+			store.Queries.UpdateProgress(ctx, progressArgs)
+		}
+	}
+
+	progressArgs := UpdateProgressParams{
+		ID:         args.ProgressID,
+		Status:     "completed",
+		Percentage: 100,
+	}
+
+	store.Queries.UpdateProgress(ctx, progressArgs)
+}
+
+func generateIndexM(store []CreateMerchantTrxParams) <-chan CreateMerchantTrxParams {
+	result := make(chan CreateMerchantTrxParams)
+
+	go func() {
+		for _, transaction := range store {
+			result <- transaction
+		}
+
+		close(result)
+	}()
+
+	return result
+}
+
+func TestingInsertM(
+	store *Store,
+	ctx *gin.Context,
+	jobs <-chan CreateMerchantTrxParams,
+	worker int,
+) <-chan MerchantTransaction {
+	result := make(chan MerchantTransaction)
+
+	wg := new(sync.WaitGroup)
+	wg.Add(worker)
+
+	go func() {
+		for i := 0; i < worker; i++ {
+			go func() {
+				for job := range jobs {
+					response := InsertFromExcelM(store, ctx, job)
+					result <- response
+				}
+				wg.Done()
+			}()
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	return result
+}
+
+func InsertFromExcelM(store *Store, ctx *gin.Context, transaction CreateMerchantTrxParams) MerchantTransaction {
+	var response MerchantTransaction
+
+	for {
+		var outerError error
+		func(outerError *error) {
+			defer func() {
+				if err := recover(); err != nil {
+					*outerError = fmt.Errorf("%v", err)
+					log.Println(err)
+				}
+			}()
+
+			store.execTx(ctx, func(q *Queries) error {
+				txRes, errors := q.CreateMerchantTrx(ctx, transaction)
 				if errors != nil {
 					return errors
 				}

@@ -21,6 +21,7 @@ func NewServer(store *db.Store) *Server {
 	apiEventTypes := router.Group("/api/progress-event-types")
 	apiProgressEvents := router.Group("/api/progress-events")
 	apiProductTrx := router.Group("/api/product-transactions")
+	apiMerchantTrx := router.Group("/api/merchant-transactions")
 
 	apiTypes.POST("/", server.createTransactionType)
 	apiTypes.GET("/:id", server.viewTransactionType)
@@ -49,6 +50,16 @@ func NewServer(store *db.Store) *Server {
 	apiProductTrx.POST("/", server.createProductTransaction)
 	apiProductTrx.POST("/csv", server.createTransactionFromCSV)
 	apiProductTrx.GET("/", server.allProductTransaction)
+	apiProductTrx.GET("/duplicates", server.allDuplicateProductTransaction)
+	apiProductTrx.DELETE("/duplicates", server.deleteDuplicateProductTransaction)
+	apiProductTrx.DELETE("/:id", server.deleteProductTransactionByID)
+
+	apiMerchantTrx.POST("/", server.createMerchantTransaction)
+	apiMerchantTrx.POST("/csv", server.createMerchantTrxFromCSV)
+	apiMerchantTrx.GET("/", server.allMerchantTransaction)
+	apiMerchantTrx.GET("/duplicates", server.allDuplicateMerchantTransaction)
+	apiMerchantTrx.DELETE("/duplicates", server.deleteDuplicateMerhcantTransaction)
+	apiMerchantTrx.DELETE("/:id", server.deleteMerchantTransactionByID)
 
 	server.router = router
 	return server

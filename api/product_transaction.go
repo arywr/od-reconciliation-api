@@ -88,8 +88,58 @@ func (server *Server) createProductTransaction(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+type FetchProductTrxRequest struct {
+	PageID   int32 `form:"page" binding:"required,min=1,max=10"`
+	PageSize int32 `form:"size" binding:"required,min=10,max=100"`
+}
+
 func (server *Server) allProductTransaction(ctx *gin.Context) {
-	data, err := server.store.AllProductTransaction(ctx)
+	var req FetchProductTrxRequest
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		var valError validator.ValidationErrors
+		if errors.As(err, &valError) {
+			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
+			return
+		}
+	}
+
+	args := db.AllProductTransactionParams{
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}
+
+	data, err := server.store.AllProductTransaction(ctx, args)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+		return
+	}
+
+	response := APIResponse(http.StatusOK, "OK", data)
+	ctx.JSON(http.StatusOK, response)
+}
+
+func (server *Server) allDuplicateProductTransaction(ctx *gin.Context) {
+	var req FetchProductTrxRequest
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		var valError validator.ValidationErrors
+		if errors.As(err, &valError) {
+			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
+			return
+		}
+	}
+
+	args := db.AllDuplicateProductTransactionParams{
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}
+
+	data, err := server.store.AllDuplicateProductTransaction(ctx, args)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))
@@ -219,5 +269,83 @@ func (server *Server) createTransactionFromCSV(ctx *gin.Context) {
 
 	go func() {
 		server.store.CreateProductTransactionCSV(ctx, mainArgs)
+		helper.DestroyFile(fileName)
 	}()
+}
+
+type DeleteDuplicateTrxRequest struct {
+	StartDate  string `json:"start_date" binding:"required"`
+	EndDate    string `json:"end_date" binding:"required"`
+	PlatformID string `json:"platform_id" binding:"required"`
+}
+
+type DeleteDuplicateTrxResult struct {
+	RowsAffected int64  `json:"rows_deleted"`
+	PlatformID   string `json:"platform_id"`
+}
+
+func (server *Server) deleteDuplicateProductTransaction(ctx *gin.Context) {
+	var req DeleteDuplicateTrxRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		var valError validator.ValidationErrors
+		if errors.As(err, &valError) {
+			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
+			return
+		}
+	}
+
+	start, _ := time.Parse("2006-01-02", req.StartDate)
+	end, _ := time.Parse("2006-01-02", req.EndDate)
+
+	args := db.DeleteDuplicateProductTrxParams{
+		StartDate:  start,
+		EndDate:    end,
+		PlatformID: req.PlatformID,
+	}
+
+	data, err := server.store.DeleteDuplicateProductTrx(ctx, args)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+		return
+	}
+
+	response := DeleteDuplicateTrxResult{
+		RowsAffected: data,
+		PlatformID:   req.PlatformID,
+	}
+
+	ctx.JSON(http.StatusOK, APIResponse(http.StatusOK, "OK", response))
+}
+
+type DeleteSingleTrxRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) deleteProductTransactionByID(ctx *gin.Context) {
+	var req DeleteSingleTrxRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		var valError validator.ValidationErrors
+		if errors.As(err, &valError) {
+			ctx.JSON(http.StatusBadRequest, APIValidationResponse(http.StatusBadRequest, "ERROR", valError))
+			return
+		}
+	}
+
+	err := server.store.DeleteProductTrxByID(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, APIErrorResponse(http.StatusNotFound, "ERROR", err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, APIResponse(http.StatusOK, "OK", "Successfully delete"))
 }
