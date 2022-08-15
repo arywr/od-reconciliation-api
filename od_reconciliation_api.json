@@ -1,0 +1,844 @@
+{
+	"info": {
+		"_postman_id": "c225f383-786f-43b2-971f-c89088682284",
+		"name": "Odissey Reconciliation API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14627072"
+	},
+	"item": [
+		{
+			"name": "Merchant Transactions",
+			"item": [
+				{
+					"name": "Create Merchant Transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_status_id\": 1,\n    \"transaction_type_id\": 1,\n    \"merchant_transaction_id\": \"abcd\",\n    \"owner_id\": \"124422\",\n    \"transaction_id\": \"abcd\",\n    \"transaction_date\": \"2022-08-08\",\n    \"transaction_datetime\": \"2022-08-08 12:05:22\",\n    \"collected_amount\": 10000,\n    \"settled_amount\": 98000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Merchant Transaction [CSV]",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions/csv",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions",
+								"csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Merchant Transaction",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_status_id\": 1,\n    \"transaction_type_id\": 1,\n    \"merchant_transaction_id\": \"abcd\",\n    \"owner_id\": \"124422\",\n    \"transaction_id\": \"abcd\",\n    \"transaction_date\": \"2022-08-08\",\n    \"transaction_datetime\": \"2022-08-08 12:05:22\",\n    \"collected_amount\": 10000,\n    \"settled_amount\": 98000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions?page=1&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Duplicate Merchant Transaction",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_status_id\": 1,\n    \"transaction_type_id\": 1,\n    \"merchant_transaction_id\": \"abcd\",\n    \"owner_id\": \"124422\",\n    \"transaction_id\": \"abcd\",\n    \"transaction_date\": \"2022-08-08\",\n    \"transaction_datetime\": \"2022-08-08 12:05:22\",\n    \"collected_amount\": 10000,\n    \"settled_amount\": 98000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions/duplicates?page=1&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions",
+								"duplicates"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Merchant Transaction By ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_date\": \"2022-08-08\",\n    \"end_date\": \"2022-08-08\",\n    \"platform_id\": \"abcd\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions/duplicates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions",
+								"duplicates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Duplicate Merchant Transaction",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_date\": \"2022-08-11\",\n    \"end_date\": \"2022-08-11\",\n    \"platform_id\": \"51204801\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions/duplicates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions",
+								"duplicates"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product Transactions",
+			"item": [
+				{
+					"name": "Create Product Transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_status_id\": 1,\n    \"transaction_type_id\": 1,\n    \"progress_event_id\": 1,\n    \"product_transaction_id\": \"abcd\",\n    \"merchant_transaction_id\": null,\n    \"channel_transaction_id\": null,\n    \"owner_id\": 1,\n    \"transaction_id\": \"abcd\",\n    \"transaction_date\": \"2022-08-08\",\n    \"transaction_datetime\": \"2022-08-08 00:00:00\",\n    \"collected_amount\": 10000,\n    \"settled_amount\": 98000,\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/product-transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"product-transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product Transaction [CSV]",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "day",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "platform_id",
+									"value": "abcd",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/product-transactions/csv",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"product-transactions",
+								"csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Product Transaction",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_status_id\": 1,\n    \"transaction_type_id\": 1,\n    \"progress_event_id\": 1,\n    \"product_transaction_id\": \"abcd\",\n    \"merchant_transaction_id\": null,\n    \"channel_transaction_id\": null,\n    \"owner_id\": 1,\n    \"transaction_id\": \"abcd\",\n    \"transaction_date\": \"2022-08-08\",\n    \"transaction_datetime\": \"2022-08-08 00:00:00\",\n    \"collected_amount\": 10000,\n    \"settled_amount\": 98000,\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/product-transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"product-transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Duplicate Product Transaction",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_status_id\": 1,\n    \"transaction_type_id\": 1,\n    \"progress_event_id\": 1,\n    \"product_transaction_id\": \"abcd\",\n    \"merchant_transaction_id\": null,\n    \"channel_transaction_id\": null,\n    \"owner_id\": 1,\n    \"transaction_id\": \"abcd\",\n    \"transaction_date\": \"2022-08-08\",\n    \"transaction_datetime\": \"2022-08-08 00:00:00\",\n    \"collected_amount\": 10000,\n    \"settled_amount\": 98000,\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/product-transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"product-transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product Transaction By ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_date\": \"2022-08-08\",\n    \"end_date\": \"2022-08-08\",\n    \"platform_id\": \"abcd\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/merchant-transactions/duplicates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"merchant-transactions",
+								"duplicates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Duplicate Product Transaction",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"start_date\": \"2022-07-14\",\n    \"end_date\": \"2022-07-17\",\n    \"platform_id\": \"abcdsa\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/product-transactions/duplicates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"product-transactions",
+								"duplicates"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Progress Event Types",
+			"item": [
+				{
+					"name": "Create Event Type",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"event_name\": \"testing\",\n    \"event_description\": \"lorem10\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/progress-event-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-event-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Event Type",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Update Event Type",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"event_name\": \"te\",\n    \"event_description\": \"yow\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/progress-event-types/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-event-types",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Event Type",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/progress-event-types/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-event-types",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Event Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/progress-event-types?page=1&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-event-types"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Progress Events",
+			"item": [
+				{
+					"name": "Create Progress Event",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"progress_event_type_id\": 1,\n    \"progress_name\": \"prog name\",\n    \"status\": \"on process\",\n    \"percentage\": 10,\n    \"file\": \"prog file\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/progress-events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-events"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Progress Event",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"percentage\": 100,\n    \"status\": \"completed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/progress-events/7",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-events",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Progress Event",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "All Progress Event",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Progress Event",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/progress-events/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"progress-events",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transaction Statuses",
+			"item": [
+				{
+					"name": "Create Transaction Status",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status_name\": \"unknown\",\n    \"status_description\": \"No Description\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transaction-statuses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-statuses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Transaction Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transaction-statuses/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-statuses",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Transaction Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status_name\": \"test aja\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transaction-statuses/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-statuses",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Transaction Status",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transaction-statuses/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-statuses",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Transaction Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transaction-statuses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-statuses"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transaction Types",
+			"item": [
+				{
+					"name": "All Transaction Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transaction-types?page=1&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-types"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Transaction Type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transaction-types/64",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-types",
+								"64"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Transaction Type",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type_name\": \"test 1\",\n    \"type_description\": \"test 1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transaction-types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Transaction Type",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type_name\": \"cash-in\",\n    \"type_description\": \"lorem10\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transaction-types/66",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-types",
+								"66"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Transaction Type",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transaction-types/66",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transaction-types",
+								"66"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
