@@ -13,6 +13,8 @@ Prequisites packages:
 * Go (Go Programming Language)
 * Make (Automated Execution using Makefile)
 * SQLC (Compile SQL to type-safe code)
+* Golang-Migrate Package
+* PostgreSQL 11 (Docker)
 
 Optional packages:
 * Docker (Application Containerization)
