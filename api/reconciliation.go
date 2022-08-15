@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	db "github.com/arywr/od-reconciliation-api/db/sqlc"
+	"github.com/arywr/od-reconciliation-api/helper"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -27,8 +28,8 @@ func (server *Server) reconciliationProduct(ctx *gin.Context) {
 		}
 	}
 
-	start, _ := stringToDatetime(req.StartDate)
-	end, _ := stringToDatetime(req.EndDate)
+	start, _ := helper.StringToDatetime(req.StartDate)
+	end, _ := helper.StringToDatetime(req.EndDate)
 
 	arg1 := db.MatchReconciliationProductParams{
 		PlatformID: req.OwnerID,

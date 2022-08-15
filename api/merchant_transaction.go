@@ -47,13 +47,13 @@ func (server *Server) createMerchantTransaction(ctx *gin.Context) {
 		}
 	}
 
-	trxDate, err := stringToDate(req.TransactionDate)
+	trxDate, err := helper.StringToDate(req.TransactionDate)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, APIErrorResponse(http.StatusBadRequest, "ERROR", err))
 		return
 	}
 
-	trxDatetime, err := stringToDatetime(req.TransactionDatetime)
+	trxDatetime, err := helper.StringToDatetime(req.TransactionDatetime)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, APIErrorResponse(http.StatusBadRequest, "ERROR", err))
 		return
