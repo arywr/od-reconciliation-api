@@ -36,14 +36,14 @@ type ErrorValidationResponse struct {
 type ErrorResponse struct {
 	Code   int    `json:"code"`
 	Status string `json:"status"`
-	Error  error  `json:"error"`
+	Error  string `json:"error"`
 }
 
 func APIErrorResponse(code int, status string, err error) ErrorResponse {
 	response := ErrorResponse{
 		Code:   code,
 		Status: status,
-		Error:  err,
+		Error:  err.Error(),
 	}
 
 	return response
