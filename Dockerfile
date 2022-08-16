@@ -1,6 +1,6 @@
 # Builder Image
 # ---------------------------------------------------
-FROMtelkomindonesia/alpine:go-1.17 AS go-builder
+FROM telkomindonesia/alpine:go-1.17 AS go-builder
 
 # Set Working Directory
 WORKDIR /app
