@@ -22,7 +22,7 @@ func NewServer(store *db.Store) *Server {
 	apiProgressEvents := router.Group("/api/v1/go-reconciliation/progress-events")
 	apiProductTrx := router.Group("/api/v1/go-reconciliation/product-transactions")
 	apiMerchantTrx := router.Group("/api/v1/go-reconciliation/merchant-transactions")
-	apiReconciliation := router.Group("/api/v1/go-reconciliation/reconciliation")
+	apiReconciliation := router.Group("/api/v1/go-reconciliation/reconcile")
 
 	apiTypes.POST("/", server.createTransactionType)
 	apiTypes.GET("/:id", server.viewTransactionType)
