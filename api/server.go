@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	db "github.com/arywr/od-reconciliation-api/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
@@ -69,6 +71,7 @@ func NewServer(store *db.Store) *Server {
 }
 
 // Starting HTTP server
-func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+func (server *Server) Start(port string) error {
+	portAddress := fmt.Sprintf(":%s", port)
+	return server.router.Run(portAddress)
 }
