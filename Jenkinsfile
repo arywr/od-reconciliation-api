@@ -6,12 +6,12 @@ env.nodeName = ""
 pipeline {
     parameters {
 
-        string(name: 'PRODUCTION_NAMESPACE',       description: 'Production Namespace',                 defaultValue: 'prod-telkompartner')
-        string(name: 'STAGING_NAMESPACE',          description: 'Staging Namespace',                    defaultValue: 'stage-telkompartner')
-        string(name: 'DEVELOPMENT_NAMESPACE',      description: 'Development Namespace',                defaultValue: 'dev-telkompartner')
+        string(name: 'PRODUCTION_NAMESPACE',       description: 'Production Namespace',                 defaultValue: 'telkompartner-prod')
+        string(name: 'STAGING_NAMESPACE',          description: 'Staging Namespace',                    defaultValue: 'telkompartner-stage')
+        string(name: 'DEVELOPMENT_NAMESPACE',      description: 'Development Namespace',                defaultValue: 'telkompartner-dev')
         string(name: 'NAMA_PRODUCT',               description: 'nama product',                         defaultValue: 'telkompartner')
    
-        string(name: 'DOCKER_IMAGE_NAME',          description: 'Docker Image Name',                    defaultValue: 'tpn-reconciliation-api-go')
+        string(name: 'DOCKER_IMAGE_NAME',          description: 'Docker Image Name',                    defaultValue: 'tpn-reconciliation-api-go-service')
 
         string(name: 'CHAT_ID',                    description: 'chat id of telegram group',            defaultValue: '-1001215679728')
     }
