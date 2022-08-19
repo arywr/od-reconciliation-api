@@ -11,7 +11,7 @@ pipeline {
         string(name: 'DEVELOPMENT_NAMESPACE',      description: 'Development Namespace',                defaultValue: 'dev-telkompartner')
         string(name: 'NAMA_PRODUCT',               description: 'nama product',                         defaultValue: 'telkompartner')
    
-        string(name: 'DOCKER_IMAGE_NAME',          description: 'Docker Image Name',                    defaultValue: 'tpn-reconciliation-api-go-service')
+        string(name: 'DOCKER_IMAGE_NAME',          description: 'Docker Image Name',                    defaultValue: 'tpn-reconciliation-api-go')
 
         string(name: 'CHAT_ID',                    description: 'chat id of telegram group',            defaultValue: '-1001215679728')
     }
