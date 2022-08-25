@@ -26,8 +26,6 @@ WORKDIR /usr/src/app
 # Copy Anything The Application Needs
 COPY --from=go-builder /tmp/app ./
 
-COPY app.env .
-
 # Expose Application Port
 EXPOSE 8080
 
