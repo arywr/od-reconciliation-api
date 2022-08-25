@@ -1,4 +1,4 @@
-# Builder Image
+# Builder Images
 # ---------------------------------------------------
 FROM telkomindonesia/alpine:go-1.17 AS go-builder
 
