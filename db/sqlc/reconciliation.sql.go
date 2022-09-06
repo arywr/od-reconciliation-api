@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/gobuffalo/nulls"
 )
 
 const disputeReconciliationMerchant = `-- name: DisputeReconciliationMerchant :exec
@@ -16,7 +18,7 @@ WITH join_merchant_dispute AS (
     FROM merchant_transactions t1
     WHERE t1.transaction_status_id != 2
     AND t1.transaction_status_id != 3
-    AND t1.owner_id = $1
+    AND t1.platform_id = $1
     AND t1.created_at BETWEEN $2 AND $3
 )
 UPDATE merchant_transactions
@@ -26,9 +28,9 @@ WHERE merchant_transactions.id = join_merchant_dispute.id
 `
 
 type DisputeReconciliationMerchantParams struct {
-	DestinationID string    `json:"destination_id"`
-	StartDate     time.Time `json:"start_date"`
-	EndDate       time.Time `json:"end_date"`
+	DestinationID nulls.Int32 `json:"destination_id"`
+	StartDate     time.Time   `json:"start_date"`
+	EndDate       time.Time   `json:"end_date"`
 }
 
 func (q *Queries) DisputeReconciliationMerchant(ctx context.Context, arg DisputeReconciliationMerchantParams) error {
@@ -42,7 +44,7 @@ WITH join_product_dispute AS (
     FROM product_transactions t1
     WHERE t1.transaction_status_id != 2
     AND t1.transaction_status_id != 3
-    AND t1.owner_id = $1
+    AND t1.product_id = $1
     AND t1.created_at BETWEEN $2 AND $3
 )
 UPDATE product_transactions
@@ -52,7 +54,7 @@ WHERE product_transactions.id = join_product_dispute.id
 `
 
 type DisputeReconciliationProductParams struct {
-	PlatformID string    `json:"platform_id"`
+	PlatformID int32     `json:"platform_id"`
 	StartDate  time.Time `json:"start_date"`
 	EndDate    time.Time `json:"end_date"`
 }
@@ -68,7 +70,7 @@ WITH join_merchant AS (
     FROM merchant_transactions t1
     LEFT OUTER JOIN product_transactions t2 ON t1.merchant_transaction_id = t2.product_transaction_id
     WHERE t2.product_transaction_id IS NOT NULL
-    AND t1.owner_id = $1
+    AND t1.platform_id = $1
     AND t1.created_at BETWEEN $2 AND $3
     AND t2.created_at BETWEEN $2 AND $3
 )
@@ -79,9 +81,9 @@ WHERE merchant_transactions.id = join_merchant.id
 `
 
 type MatchReconciliationMerchantParams struct {
-	DestinationID string    `json:"destination_id"`
-	StartDate     time.Time `json:"start_date"`
-	EndDate       time.Time `json:"end_date"`
+	DestinationID nulls.Int32 `json:"destination_id"`
+	StartDate     time.Time   `json:"start_date"`
+	EndDate       time.Time   `json:"end_date"`
 }
 
 func (q *Queries) MatchReconciliationMerchant(ctx context.Context, arg MatchReconciliationMerchantParams) error {
@@ -95,7 +97,7 @@ WITH join_product AS (
     FROM product_transactions t1
     LEFT OUTER JOIN merchant_transactions t2 ON t1.product_transaction_id = t2.merchant_transaction_id
     WHERE t2.merchant_transaction_id IS NOT NULL
-    AND t1.owner_id = $1
+    AND t1.product_id = $1
     AND t1.created_at BETWEEN $2 AND $3
     AND t2.created_at BETWEEN $2 AND $3
 )
@@ -106,7 +108,7 @@ WHERE product_transactions.id = join_product.id
 `
 
 type MatchReconciliationProductParams struct {
-	PlatformID string    `json:"platform_id"`
+	PlatformID int32     `json:"platform_id"`
 	StartDate  time.Time `json:"start_date"`
 	EndDate    time.Time `json:"end_date"`
 }

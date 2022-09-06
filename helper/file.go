@@ -2,18 +2,11 @@ package helper
 
 import (
 	"encoding/csv"
+	"log"
 	"os"
-)
 
-// import (
-// 	"encoding/csv"
-// 	"fmt"
-// 	"io"
-// 	"net/http"
-// 	"os"
-// 	"path/filepath"
-// 	"time"
-// )
+	"github.com/xuri/excelize/v2"
+)
 
 func ReadCSVFile(file string) (*csv.Reader, *os.File, error) {
 	osFile, err := os.Open(file)
@@ -29,47 +22,21 @@ func ReadCSVFile(file string) (*csv.Reader, *os.File, error) {
 	return reader, osFile, nil
 }
 
-// func ReadCsvFile(request *http.Request, file string) (*csv.Reader, *os.File, error) {
-// 	_, _, day := time.Now().Date()
+func ReadExcelFile(file string) ([][]string, error) {
+	f, err := excelize.OpenFile(file)
 
-// 	var readFile string
+	if err != nil {
+		return nil, err
+	}
 
-// 	if file != "" {
-// 		readFile = file
-// 	} else {
-// 		readFile = fmt.Sprintf("temp/jalin %d0722.csv", int(day)-request.Day)
-// 	}
+	firstSheet := f.WorkBook.Sheets.Sheet[0].Name
+	rows, err := f.GetRows(firstSheet)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-// 	osFile, err := os.Open(readFile)
-// 	PanicIfError(err)
-
-// 	reader := csv.NewReader(osFile)
-// 	reader.FieldsPerRecord = -1
-// 	reader.Comma = ';'
-// 	reader.LazyQuotes = true
-
-// 	return reader, osFile, nil
-// }
-
-// func UploadFile(file interface{}, name string) (string, error) {
-// 	var fileName string
-
-// 	current := time.Now().Unix()
-
-// 	file, handler, err := request.FormFile("file")
-// 	defer file.Close()
-
-// 	ext := filepath.Ext(handler.Filename)
-
-// 	fileName = fmt.Sprintf("./temp/%d_%s%s", current, request.FormValue("platformId"), ext)
-
-// 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0666)
-// 	PanicIfError(err)
-
-// 	io.Copy(f, file)
-
-// 	return fileName, nil
-// }
+	return rows, nil
+}
 
 func DestroyFile(path string) error {
 	err := os.Remove(path)

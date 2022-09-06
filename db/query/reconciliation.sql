@@ -4,7 +4,7 @@ WITH join_product AS (
     FROM product_transactions t1
     LEFT OUTER JOIN merchant_transactions t2 ON t1.product_transaction_id = t2.merchant_transaction_id
     WHERE t2.merchant_transaction_id IS NOT NULL
-    AND t1.owner_id = sqlc.arg(platform_id)
+    AND t1.product_id = sqlc.arg(platform_id)
     AND t1.created_at BETWEEN sqlc.arg(start_date) AND sqlc.arg(end_date)
     AND t2.created_at BETWEEN sqlc.arg(start_date) AND sqlc.arg(end_date)
 )
@@ -19,7 +19,7 @@ WITH join_merchant AS (
     FROM merchant_transactions t1
     LEFT OUTER JOIN product_transactions t2 ON t1.merchant_transaction_id = t2.product_transaction_id
     WHERE t2.product_transaction_id IS NOT NULL
-    AND t1.owner_id = sqlc.arg(destination_id)
+    AND t1.platform_id = sqlc.arg(destination_id)
     AND t1.created_at BETWEEN sqlc.arg(start_date) AND sqlc.arg(end_date)
     AND t2.created_at BETWEEN sqlc.arg(start_date) AND sqlc.arg(end_date)
 )
@@ -34,7 +34,7 @@ WITH join_product_dispute AS (
     FROM product_transactions t1
     WHERE t1.transaction_status_id != 2
     AND t1.transaction_status_id != 3
-    AND t1.owner_id = sqlc.arg(platform_id)
+    AND t1.product_id = sqlc.arg(platform_id)
     AND t1.created_at BETWEEN sqlc.arg(start_date) AND sqlc.arg(end_date)
 )
 UPDATE product_transactions
@@ -48,7 +48,7 @@ WITH join_merchant_dispute AS (
     FROM merchant_transactions t1
     WHERE t1.transaction_status_id != 2
     AND t1.transaction_status_id != 3
-    AND t1.owner_id = sqlc.arg(destination_id)
+    AND t1.platform_id = sqlc.arg(destination_id)
     AND t1.created_at BETWEEN sqlc.arg(start_date) AND sqlc.arg(end_date)
 )
 UPDATE merchant_transactions

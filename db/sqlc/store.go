@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -116,13 +117,13 @@ func (store *Store) UpdateProgressTx(ctx context.Context, arg UpdateProgressTxPa
 
 type ProductTrxCSVParams struct {
 	Day        int                   `form:"day"`
-	PlatformId string                `form:"platform_id" binding:"required"`
+	PlatformId int32                 `form:"platform_id" binding:"required"`
 	File       *multipart.FileHeader `form:"file"`
 }
 
 type SaveTrxCSVRequest struct {
 	FileName   string
-	PlatformID string
+	PlatformID int32
 	ProgressID int64
 	Counter    int64
 }
@@ -130,80 +131,133 @@ type SaveTrxCSVRequest struct {
 func (store *Store) CreateProductTransactionCSV(ctx *gin.Context, args SaveTrxCSVRequest) {
 	currentTime := time.Now()
 
-	csvReader, csvFile, err := helper.ReadCSVFile(args.FileName)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	model, err := store.Queries.GetTransactionModel(ctx, args.PlatformID)
 
-	defer csvFile.Close()
-
-	isHeader := true
 	var rows []CreateProductTransactionParams
 
-	for {
-		row, err := csvReader.Read()
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-			}
-			break
-		}
+	if err == nil {
+		switch model.FileType.String {
+		case "XLSX":
+			readResult, err := helper.ReadExcelFile(args.FileName)
 
-		if isHeader {
-			isHeader = false
-			continue
-		}
-
-		trxDate, _ := time.Parse("2006-01-02", row[2])
-		trxDatetime, _ := time.Parse("2006-01-02 15:04:05", row[2]+" "+row[3])
-		collect, _ := strconv.ParseFloat(row[11], 64)
-		settled, _ := strconv.ParseFloat(row[11], 64)
-
-		transaction := CreateProductTransactionParams{
-			OwnerID:              args.PlatformID,
-			TransactionStatusID:  1,
-			TransactionTypeID:    1,
-			ProductTransactionID: nulls.String{String: row[4], Valid: true},
-			TransactionDate:      trxDate,
-			TransactionDatetime:  trxDatetime,
-			CollectedAmount:      collect,
-			SettledAmount:        settled,
-			CreatedAt:            currentTime,
-			UpdatedAt:            currentTime,
-		}
-		rows = append(rows, transaction)
-	}
-
-	jobs := generateIndex(rows)
-	worker := runtime.NumCPU()
-	result := TestingInsert(store, ctx, jobs, worker)
-
-	counterSuccess := 0
-	for res := range result {
-		if res.ID == 0 {
-			log.Println("Has Error")
-		} else {
-			counterSuccess++
-		}
-
-		if counterSuccess%100 == 0 {
-			progressArgs := UpdateProgressParams{
-				ID:         args.ProgressID,
-				Percentage: float64(counterSuccess) / float64(args.Counter) * 100,
+			if err != nil {
+				log.Println(err)
+				return
 			}
 
-			store.Queries.UpdateProgress(ctx, progressArgs)
+			for i := model.RowStartAt.Int16; int(i) < len(readResult); i++ {
+				trxDate, _ := time.Parse(model.TransactionDateFormat.String, readResult[i][model.TransactionDate.Int16])
+				trxDatetime, _ := time.Parse(model.TransactionDatetimeFormat.String, readResult[i][model.TransactionDatetime.Int16])
+				collect, _ := strconv.ParseFloat(readResult[i][model.TransactionAmount.Int16], 64)
+				settled, _ := strconv.ParseFloat(readResult[i][model.SettledAmount.Int16], 64)
+
+				transaction := CreateProductTransactionParams{
+					ProductID:            args.PlatformID,
+					TransactionStatusID:  1,
+					TransactionTypeID:    1,
+					ProductTransactionID: nulls.String{String: readResult[i][model.TransactionID.Int16], Valid: true},
+					TransactionDate:      trxDate,
+					TransactionDatetime:  trxDatetime,
+					ChannelCode:          nulls.String{String: readResult[i][model.ChannelCode.Int16], Valid: true},
+					ChannelName:          nulls.String{String: readResult[i][model.ChannelName.Int16], Valid: true},
+					MerchantCode:         nulls.String{String: readResult[i][model.MerchantCode.Int16], Valid: true},
+					MerchantName:         nulls.String{String: readResult[i][model.MerchantName.Int16], Valid: true},
+					ProductCode:          nulls.String{String: readResult[i][model.ProductCode.Int16], Valid: true},
+					ProductName:          nulls.String{String: readResult[i][model.ProductName.Int16], Valid: true},
+					CollectedAmount:      collect,
+					SettledAmount:        settled,
+					CreatedAt:            currentTime,
+					UpdatedAt:            currentTime,
+				}
+				rows = append(rows, transaction)
+			}
+
+		case "CSV":
+			csvReader, csvFile, err := helper.ReadCSVFile(args.FileName)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			defer csvFile.Close()
+
+			isHeader := true
+
+			for {
+				row, err := csvReader.Read()
+				if err != nil {
+					if err == io.EOF {
+						err = nil
+					}
+					break
+				}
+
+				if isHeader {
+					isHeader = false
+					continue
+				}
+
+				trxDate, _ := time.Parse("2006-01-02", row[model.TransactionDate.Int16])
+				trxDatetime, _ := time.Parse("2006-01-02 15:04:05", row[model.TransactionDatetime.Int16])
+				collect, _ := strconv.ParseFloat(row[model.TransactionAmount.Int16], 64)
+				settled, _ := strconv.ParseFloat(row[model.SettledAmount.Int16], 64)
+
+				transaction := CreateProductTransactionParams{
+					ProductID:            args.PlatformID,
+					TransactionStatusID:  1,
+					TransactionTypeID:    1,
+					ProductTransactionID: nulls.String{String: row[model.TransactionID.Int16], Valid: true},
+					TransactionDate:      trxDate,
+					TransactionDatetime:  trxDatetime,
+					ChannelCode:          nulls.String{String: row[model.ChannelCode.Int16], Valid: true},
+					ChannelName:          nulls.String{String: row[model.ChannelName.Int16], Valid: true},
+					MerchantCode:         nulls.String{String: row[model.MerchantCode.Int16], Valid: true},
+					MerchantName:         nulls.String{String: row[model.MerchantName.Int16], Valid: true},
+					ProductCode:          nulls.String{String: row[model.ProductCode.Int16], Valid: true},
+					ProductName:          nulls.String{String: row[model.ProductName.Int16], Valid: true},
+					CollectedAmount:      collect,
+					SettledAmount:        settled,
+					CreatedAt:            currentTime,
+					UpdatedAt:            currentTime,
+				}
+				rows = append(rows, transaction)
+			}
+
+		default:
+			return
 		}
+
+		jobs := generateIndex(rows)
+		worker := runtime.NumCPU()
+		result := TestingInsert(store, ctx, jobs, worker)
+
+		counterSuccess := 0
+		for res := range result {
+			if res.ID == 0 {
+				log.Println("Has Error")
+			} else {
+				counterSuccess++
+			}
+
+			if counterSuccess%100 == 0 {
+				progressArgs := UpdateProgressParams{
+					ID:         args.ProgressID,
+					Percentage: float64(counterSuccess) / float64(args.Counter) * 100,
+				}
+
+				store.Queries.UpdateProgress(ctx, progressArgs)
+			}
+		}
+
+		progressArgs := UpdateProgressParams{
+			ID:         args.ProgressID,
+			Status:     "completed",
+			Percentage: 100,
+		}
+
+		store.Queries.UpdateProgress(ctx, progressArgs)
 	}
 
-	progressArgs := UpdateProgressParams{
-		ID:         args.ProgressID,
-		Status:     "completed",
-		Percentage: 100,
-	}
-
-	store.Queries.UpdateProgress(ctx, progressArgs)
 }
 
 func generateIndex(store []CreateProductTransactionParams) <-chan CreateProductTransactionParams {
@@ -267,6 +321,7 @@ func InsertFromExcel(store *Store, ctx *gin.Context, transaction CreateProductTr
 			store.execTx(ctx, func(q *Queries) error {
 				txRes, errors := q.CreateProductTransaction(ctx, transaction)
 				if errors != nil {
+					log.Println(errors)
 					return errors
 				}
 
@@ -285,82 +340,132 @@ func InsertFromExcel(store *Store, ctx *gin.Context, transaction CreateProductTr
 func (store *Store) CreateMerchantTransactionCSV(ctx *gin.Context, args SaveTrxCSVRequest) {
 	currentTime := time.Now()
 
-	csvReader, csvFile, err := helper.ReadCSVFile(args.FileName)
-	if err != nil {
-		return
-	}
+	model, err := store.Queries.GetTransactionModelMerchant(ctx, args.PlatformID)
 
-	defer csvFile.Close()
-
-	isHeader := true
 	var rows []CreateMerchantTrxParams
 
-	for {
-		row, err := csvReader.Read()
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-			}
-			break
-		}
+	if err == nil {
+		switch model.FileType.String {
+		case "XLSX":
+			readResult, err := helper.ReadExcelFile(args.FileName)
 
-		if isHeader {
-			isHeader = false
-			continue
-		}
-
-		trxDate, _ := time.Parse("2006-01-02 15:04:05", row[0])
-		trxDatetime, _ := time.Parse("2006-01-02 15:04:05", row[0])
-		collect, _ := strconv.ParseFloat(row[18], 64)
-		settled, _ := strconv.ParseFloat(row[18], 64)
-
-		trxDateFormat := trxDate.Format("2006-01-02")
-		trxDateFormatParsed, _ := time.Parse("2006-01-02", trxDateFormat)
-
-		transaction := CreateMerchantTrxParams{
-			OwnerID:               args.PlatformID,
-			TransactionStatusID:   1,
-			TransactionTypeID:     1,
-			MerchantTransactionID: row[19],
-			TransactionDate:       trxDateFormatParsed,
-			TransactionDatetime:   trxDatetime,
-			CollectedAmount:       collect,
-			SettledAmount:         settled,
-			CreatedAt:             currentTime,
-			UpdatedAt:             currentTime,
-		}
-		rows = append(rows, transaction)
-	}
-
-	jobs := generateIndexM(rows)
-	worker := runtime.NumCPU()
-	result := TestingInsertM(store, ctx, jobs, worker)
-
-	counterSuccess := 0
-	for res := range result {
-		if res.ID == 0 {
-			log.Println("Has Error")
-		} else {
-			counterSuccess++
-		}
-
-		if counterSuccess%100 == 0 {
-			progressArgs := UpdateProgressParams{
-				ID:         args.ProgressID,
-				Percentage: float64(counterSuccess) / float64(args.Counter) * 100,
+			if err != nil {
+				log.Println("Read Error: ", err)
+				return
 			}
 
-			store.Queries.UpdateProgress(ctx, progressArgs)
+			for i := model.RowStartAt.Int16; int(i) < len(readResult); i++ {
+				trxDate, _ := time.Parse(model.TransactionDateFormat.String, readResult[i][model.TransactionDate.Int16])
+				trxDatetime, _ := time.Parse(model.TransactionDatetimeFormat.String, readResult[i][model.TransactionDatetime.Int16])
+				collect, _ := strconv.ParseFloat(readResult[i][model.TransactionAmount.Int16], 64)
+				settled, _ := strconv.ParseFloat(readResult[i][model.SettledAmount.Int16], 64)
+
+				transaction := CreateMerchantTrxParams{
+					ProductID:            args.PlatformID,
+					TransactionStatusID:  1,
+					TransactionTypeID:    1,
+					ProductTransactionID: nulls.String{String: readResult[i][model.TransactionID.Int16], Valid: true},
+					TransactionDate:      trxDate,
+					TransactionDatetime:  trxDatetime,
+					ChannelCode:          nulls.String{String: readResult[i][model.ChannelCode.Int16], Valid: true},
+					ChannelName:          nulls.String{String: readResult[i][model.ChannelName.Int16], Valid: true},
+					MerchantCode:         nulls.String{String: readResult[i][model.MerchantCode.Int16], Valid: true},
+					MerchantName:         nulls.String{String: readResult[i][model.MerchantName.Int16], Valid: true},
+					ProductCode:          nulls.String{String: readResult[i][model.ProductCode.Int16], Valid: true},
+					ProductName:          nulls.String{String: readResult[i][model.ProductName.Int16], Valid: true},
+					CollectedAmount:      collect,
+					SettledAmount:        settled,
+					CreatedAt:            currentTime,
+					UpdatedAt:            currentTime,
+				}
+				rows = append(rows, transaction)
+			}
+
+		case "CSV":
+			csvReader, csvFile, err := helper.ReadCSVFile(args.FileName)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			defer csvFile.Close()
+
+			isHeader := true
+
+			for {
+				row, err := csvReader.Read()
+				if err != nil {
+					if err == io.EOF {
+						err = nil
+					}
+					break
+				}
+
+				if isHeader {
+					isHeader = false
+					continue
+				}
+
+				trxDate, _ := time.Parse("2006-01-02", row[model.TransactionDate.Int16])
+				trxDatetime, _ := time.Parse("2006-01-02 15:04:05", row[model.TransactionDatetime.Int16])
+				collect, _ := strconv.ParseFloat(row[model.TransactionAmount.Int16], 64)
+				settled, _ := strconv.ParseFloat(row[model.SettledAmount.Int16], 64)
+
+				transaction := CreateMerchantTrxParams{
+					ProductID:            args.PlatformID,
+					TransactionStatusID:  1,
+					TransactionTypeID:    1,
+					ProductTransactionID: nulls.String{String: row[model.TransactionID.Int16], Valid: true},
+					TransactionDate:      trxDate,
+					TransactionDatetime:  trxDatetime,
+					ChannelCode:          nulls.String{String: row[model.ChannelCode.Int16], Valid: true},
+					ChannelName:          nulls.String{String: row[model.ChannelName.Int16], Valid: true},
+					MerchantCode:         nulls.String{String: row[model.MerchantCode.Int16], Valid: true},
+					MerchantName:         nulls.String{String: row[model.MerchantName.Int16], Valid: true},
+					ProductCode:          nulls.String{String: row[model.ProductCode.Int16], Valid: true},
+					ProductName:          nulls.String{String: row[model.ProductName.Int16], Valid: true},
+					CollectedAmount:      collect,
+					SettledAmount:        settled,
+					CreatedAt:            currentTime,
+					UpdatedAt:            currentTime,
+				}
+				rows = append(rows, transaction)
+			}
+
+		default:
+			return
 		}
-	}
 
-	progressArgs := UpdateProgressParams{
-		ID:         args.ProgressID,
-		Status:     "completed",
-		Percentage: 100,
-	}
+		jobs := generateIndexM(rows)
+		worker := runtime.NumCPU()
+		result := TestingInsertM(store, ctx, jobs, worker)
 
-	store.Queries.UpdateProgress(ctx, progressArgs)
+		counterSuccess := 0
+		for res := range result {
+			if res.ID == 0 {
+				log.Println("Has Error")
+			} else {
+				counterSuccess++
+			}
+
+			if counterSuccess%100 == 0 {
+				progressArgs := UpdateProgressParams{
+					ID:         args.ProgressID,
+					Percentage: float64(counterSuccess) / float64(args.Counter) * 100,
+				}
+
+				store.Queries.UpdateProgress(ctx, progressArgs)
+			}
+		}
+
+		progressArgs := UpdateProgressParams{
+			ID:         args.ProgressID,
+			Status:     "completed",
+			Percentage: 100,
+		}
+
+		store.Queries.UpdateProgress(ctx, progressArgs)
+	}
 }
 
 func generateIndexM(store []CreateMerchantTrxParams) <-chan CreateMerchantTrxParams {
@@ -437,4 +542,142 @@ func InsertFromExcelM(store *Store, ctx *gin.Context, transaction CreateMerchant
 	}
 
 	return response
+}
+
+type ReconcileRequest struct {
+	ProductID  int32
+	PlatformID int32
+	StartDate  time.Time
+	EndDate    time.Time
+}
+
+func (store *Store) Reconcile(ctx *gin.Context, args ReconcileRequest) error {
+	// Find all products and merchant related
+	platforms, err := store.Queries.GetRelatedPlatforms(ctx, int64(args.ProductID))
+
+	if err != nil {
+		return err
+	}
+
+	for _, platform := range platforms {
+		switch platform.ProductHasSub {
+		case true:
+			// Case if products has sub products
+		case false:
+			// Case if products has no sub products
+
+			// Get reconcile rules of product & platform related
+			// Params: product_id, platform_id
+
+			ruleArgs := GetReconcileRuleParams{
+				ProductID:  int64(platform.ProductID),
+				PlatformID: int64(platform.MerchantID.Int64),
+			}
+
+			rules, err := store.Queries.GetReconcileRule(ctx, ruleArgs)
+
+			if err != nil {
+				return err
+			}
+
+			if len(rules) == 0 {
+				continue
+			}
+
+			// Initialize slice of string of query tokens
+
+			var matchQuery []string
+			var tokenOperator []string
+			var combinedToken []string
+
+			for length, rule := range rules {
+				if rule.ProductColumnField.String == "transaction_key" && rule.PlatformColumnField.String == "transaction_key" {
+					// If 	-> column used is transaction_key
+					// Then -> have join possibility and create token join
+				} else {
+					if rule.ProductColumnField.String != "" {
+						matchQuery = append(matchQuery, "WITH join_recon AS (SELECT t1.id FROM product_transactions t1")
+
+						switch rule.ProductColumnConditions.String {
+						case "EQUAL":
+							token := fmt.Sprintf("WHERE t1.%s = '%s'", rule.ProductColumnField.String, rule.ProductColumnValue.String)
+							tokenOperator = append(tokenOperator, token)
+
+							if length != len(rules) {
+								break
+							}
+
+							if rule.RuleMandatory.String == "REQUIRED" {
+								tokenOperator = append(tokenOperator, "AND")
+							} else if rule.RuleMandatory.String == "OPTIONAL" {
+								tokenOperator = append(tokenOperator, "OR")
+							}
+						}
+
+						start := args.StartDate.Format("2006-01-02 15:04:05")
+						end := args.EndDate.Format("2006-01-02 15:04:05")
+
+						// Join query tokens
+						closingToken := fmt.Sprintf(`
+							AND t1.transaction_date BETWEEN '%s' AND '%s')
+							UPDATE product_transactions
+							SET transaction_status_id = 3, updated_at = now(), platform_id = %d
+							FROM join_recon WHERE product_transactions.id = join_recon.id;`, start, end, platform.MerchantID.Int64,
+						)
+
+						combinedToken = append(matchQuery, tokenOperator...)
+						combinedToken = append(combinedToken, closingToken)
+
+						query := strings.Join(combinedToken, " ")
+						store.Queries.db.ExecContext(ctx, query)
+					} else {
+						matchQuery = append(matchQuery, "WITH join_recon AS (SELECT t1.id FROM merchant_transactions t1")
+
+						switch rule.ProductColumnConditions.String {
+						case "EQUAL":
+							token := fmt.Sprintf("WHERE t1.%s = '%s'", rule.ProductColumnField.String, rule.ProductColumnValue.String)
+							tokenOperator = append(tokenOperator, token)
+
+							if length != len(rules) {
+								break
+							}
+
+							if rule.RuleMandatory.String == "REQUIRED" {
+								tokenOperator = append(tokenOperator, "AND")
+							} else if rule.RuleMandatory.String == "OPTIONAL" {
+								tokenOperator = append(tokenOperator, "OR")
+							}
+						}
+
+						start := args.StartDate.Format("2006-01-02 15:04:05")
+						end := args.EndDate.Format("2006-01-02 15:04:05")
+
+						// Join query tokens
+						closingToken := fmt.Sprintf(`
+							t1.transaction_date BETWEEN '%s' AND '%s')
+							UPDATE merchant_transactions
+							SET transaction_status_id = 3, updated_at = now(), product_id = %d, platform_id = %d
+							FROM join_recon WHERE merchant_transactions.id = join_recon.id;`, start, end, platform.ProductID, platform.MerchantID.Int64,
+						)
+
+						if len(tokenOperator) != 0 {
+							closingToken = ("AND" + string(closingToken))
+						} else {
+							closingToken = ("WHERE" + string(closingToken))
+						}
+
+						combinedToken = append(matchQuery, tokenOperator...)
+						combinedToken = append(combinedToken, closingToken)
+
+						query := strings.Join(combinedToken, " ")
+
+						log.Println(query)
+						store.Queries.db.ExecContext(ctx, query)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }

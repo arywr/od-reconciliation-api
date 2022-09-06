@@ -21,7 +21,7 @@ packages:
       - go_type: "github.com/gobuffalo/nulls.String"
         db_type: "pg_catalog.varchar"
         nullable: true
-      - db_type: "float64"
+      - db_type: "float"
         go_type: "github.com/gobuffalo/nulls.Float64"
         nullable: true
       - db_type: "pg_catalog.int4"

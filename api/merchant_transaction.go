@@ -21,19 +21,19 @@ import (
 )
 
 type CreateMerchantTrxRequest struct {
-	TransactionStatusID   int16      `json:"transaction_status_id" binding:"required"`
-	TransactionTypeID     int16      `json:"transaction_type_id" binding:"required"`
-	ProgressEventID       int16      `json:"progress_event_id"`
-	MerchantTransactionID string     `json:"merchant_transaction_id" binding:"required"`
-	OwnerID               string     `json:"owner_id" binding:"required"`
-	TransactionID         string     `json:"transaction_id"`
-	TransactionDate       string     `json:"transaction_date" binding:"required"`
-	TransactionDatetime   string     `json:"transaction_datetime" binding:"required"`
-	CollectedAmount       float64    `json:"collected_amount" binding:"required"`
-	SettledAmount         float64    `json:"settled_amount" binding:"required"`
-	CreatedAt             string     `json:"created_at"`
-	UpdatedAt             string     `json:"updated_at"`
-	DeletedAt             nulls.Time `json:"deleted_at"`
+	TransactionStatusID   int16        `json:"transaction_status_id" binding:"required"`
+	TransactionTypeID     int16        `json:"transaction_type_id" binding:"required"`
+	ProgressEventID       int16        `json:"progress_event_id"`
+	MerchantTransactionID nulls.String `json:"merchant_transaction_id" binding:"required"`
+	PlatformID            nulls.Int32  `json:"platform_id" binding:"required"`
+	TransactionID         string       `json:"transaction_id"`
+	TransactionDate       string       `json:"transaction_date" binding:"required"`
+	TransactionDatetime   string       `json:"transaction_datetime" binding:"required"`
+	CollectedAmount       float64      `json:"collected_amount" binding:"required"`
+	SettledAmount         float64      `json:"settled_amount" binding:"required"`
+	CreatedAt             string       `json:"created_at"`
+	UpdatedAt             string       `json:"updated_at"`
+	DeletedAt             nulls.Time   `json:"deleted_at"`
 }
 
 func (server *Server) createMerchantTransaction(ctx *gin.Context) {
@@ -63,7 +63,7 @@ func (server *Server) createMerchantTransaction(ctx *gin.Context) {
 		TransactionStatusID:   req.TransactionStatusID,
 		TransactionTypeID:     req.TransactionTypeID,
 		MerchantTransactionID: req.MerchantTransactionID,
-		OwnerID:               req.OwnerID,
+		PlatformID:            req.PlatformID,
 		TransactionID:         req.TransactionID,
 		TransactionDate:       trxDate,
 		TransactionDatetime:   trxDatetime,
@@ -241,17 +241,56 @@ func (server *Server) createMerchantTrxFromCSV(ctx *gin.Context) {
 	// Read & Count CSV File
 	var counter int64
 
-	csvReader, csvFile, err := helper.ReadCSVFile(fileName)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
-		return
+	switch ext {
+	case ".xlsx":
+		xlsxReader, err := helper.ReadExcelFile(fileName)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+			return
+		}
+
+		for range xlsxReader {
+			counter++
+		}
+
+	case ".csv":
+		csvReader, csvFile, err := helper.ReadCSVFile(fileName)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+			return
+		}
+		defer csvFile.Close()
+
+		isHeader := true
+
+		for {
+			_, err := csvReader.Read()
+			if err != nil {
+				if err == io.EOF {
+					err = nil
+				} else {
+					ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+					return
+				}
+
+				break
+			}
+
+			if isHeader {
+				isHeader = false
+				continue
+			}
+			counter++
+		}
+
+	default:
+		counter = 0
 	}
-	defer csvFile.Close()
 
 	// Create progress data first
 	progressArgs := db.CreateProgressEventParams{
 		ProgressEventTypeID: 1,
-		ProgressName:        req.PlatformId,
+		ProgressName:        fmt.Sprintf("Reading file: %d", req.PlatformId),
 		Status:              "on process",
 		Percentage:          0,
 		File:                req.File.Filename,
@@ -261,28 +300,6 @@ func (server *Server) createMerchantTrxFromCSV(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
 		return
-	}
-
-	isHeader := true
-
-	for {
-		_, err := csvReader.Read()
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-			} else {
-				ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
-				return
-			}
-
-			break
-		}
-
-		if isHeader {
-			isHeader = false
-			continue
-		}
-		counter++
 	}
 
 	res := CreateTrxCSVResult{

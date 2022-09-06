@@ -5,59 +5,80 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/gobuffalo/nulls"
 )
 
-type ChannelTransaction struct {
-	ID                   int64       `json:"id"`
-	TransactionStatusID  int16       `json:"transaction_status_id"`
-	TransactionTypeID    int16       `json:"transaction_type_id"`
-	ProgressEventID      nulls.Int32 `json:"progress_event_id"`
-	ChannelTransactionID string      `json:"channel_transaction_id"`
-	OwnerID              string      `json:"owner_id"`
-	TransactionID        string      `json:"transaction_id"`
-	TransactionDate      time.Time   `json:"transaction_date"`
-	TransactionDatetime  time.Time   `json:"transaction_datetime"`
-	CollectedAmount      float64     `json:"collected_amount"`
-	SettledAmount        float64     `json:"settled_amount"`
-	CreatedAt            time.Time   `json:"created_at"`
-	UpdatedAt            time.Time   `json:"updated_at"`
-	DeletedAt            nulls.Time  `json:"deleted_at"`
+type Merchant struct {
+	ID                 int64       `json:"id"`
+	ProductID          int64       `json:"product_id"`
+	TransactionModelID nulls.Int32 `json:"transaction_model_id"`
+	MerchantName       string      `json:"merchant_name"`
+	MerchantCode       string      `json:"merchant_code"`
+	MerchantHasSub     bool        `json:"merchant_has_sub"`
 }
 
 type MerchantTransaction struct {
-	ID                    int64       `json:"id"`
-	TransactionStatusID   int16       `json:"transaction_status_id"`
-	TransactionTypeID     int16       `json:"transaction_type_id"`
-	ProgressEventID       nulls.Int32 `json:"progress_event_id"`
-	MerchantTransactionID string      `json:"merchant_transaction_id"`
-	OwnerID               string      `json:"owner_id"`
-	TransactionID         string      `json:"transaction_id"`
-	TransactionDate       time.Time   `json:"transaction_date"`
-	TransactionDatetime   time.Time   `json:"transaction_datetime"`
-	CollectedAmount       float64     `json:"collected_amount"`
-	SettledAmount         float64     `json:"settled_amount"`
-	CreatedAt             time.Time   `json:"created_at"`
-	UpdatedAt             time.Time   `json:"updated_at"`
-	DeletedAt             nulls.Time  `json:"deleted_at"`
-}
-
-type ProductTransaction struct {
 	ID                    int64        `json:"id"`
+	ProductID             int32        `json:"product_id"`
+	SubProductID          nulls.Int32  `json:"sub_product_id"`
+	PlatformID            nulls.Int32  `json:"platform_id"`
+	SubPlatformID         nulls.Int32  `json:"sub_platform_id"`
 	TransactionStatusID   int16        `json:"transaction_status_id"`
 	TransactionTypeID     int16        `json:"transaction_type_id"`
 	ProgressEventID       nulls.Int32  `json:"progress_event_id"`
 	ProductTransactionID  nulls.String `json:"product_transaction_id"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
-	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
-	OwnerID               string       `json:"owner_id"`
 	TransactionID         string       `json:"transaction_id"`
 	TransactionDate       time.Time    `json:"transaction_date"`
 	TransactionDatetime   time.Time    `json:"transaction_datetime"`
+	ChannelCode           nulls.String `json:"channel_code"`
+	ChannelName           nulls.String `json:"channel_name"`
+	MerchantCode          nulls.String `json:"merchant_code"`
+	MerchantName          nulls.String `json:"merchant_name"`
+	ProductCode           nulls.String `json:"product_code"`
+	ProductName           nulls.String `json:"product_name"`
 	CollectedAmount       float64      `json:"collected_amount"`
 	SettledAmount         float64      `json:"settled_amount"`
+	ReconcileAt           nulls.Time   `json:"reconcile_at"`
+	CreatedAt             time.Time    `json:"created_at"`
+	UpdatedAt             time.Time    `json:"updated_at"`
+	DeletedAt             nulls.Time   `json:"deleted_at"`
+}
+
+type Product struct {
+	ID                 int64         `json:"id"`
+	TransactionModelID sql.NullInt64 `json:"transaction_model_id"`
+	ProductName        string        `json:"product_name"`
+	ProductCode        string        `json:"product_code"`
+	ProductHasSub      bool          `json:"product_has_sub"`
+}
+
+type ProductTransaction struct {
+	ID                    int64        `json:"id"`
+	ProductID             int32        `json:"product_id"`
+	SubProductID          nulls.Int32  `json:"sub_product_id"`
+	PlatformID            nulls.Int32  `json:"platform_id"`
+	SubPlatformID         nulls.Int32  `json:"sub_platform_id"`
+	TransactionStatusID   int16        `json:"transaction_status_id"`
+	TransactionTypeID     int16        `json:"transaction_type_id"`
+	ProgressEventID       nulls.Int32  `json:"progress_event_id"`
+	ProductTransactionID  nulls.String `json:"product_transaction_id"`
+	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
+	TransactionID         string       `json:"transaction_id"`
+	TransactionDate       time.Time    `json:"transaction_date"`
+	TransactionDatetime   time.Time    `json:"transaction_datetime"`
+	ChannelCode           nulls.String `json:"channel_code"`
+	ChannelName           nulls.String `json:"channel_name"`
+	MerchantCode          nulls.String `json:"merchant_code"`
+	MerchantName          nulls.String `json:"merchant_name"`
+	ProductCode           nulls.String `json:"product_code"`
+	ProductName           nulls.String `json:"product_name"`
+	CollectedAmount       float64      `json:"collected_amount"`
+	SettledAmount         float64      `json:"settled_amount"`
+	ReconcileAt           nulls.Time   `json:"reconcile_at"`
 	CreatedAt             time.Time    `json:"created_at"`
 	UpdatedAt             time.Time    `json:"updated_at"`
 	DeletedAt             nulls.Time   `json:"deleted_at"`
@@ -82,6 +103,58 @@ type ProgressEventType struct {
 	CreatedAt                    time.Time  `json:"created_at"`
 	UpdatedAt                    time.Time  `json:"updated_at"`
 	DeletedAt                    nulls.Time `json:"deleted_at"`
+}
+
+type ReconcileRule struct {
+	ID                       int64        `json:"id"`
+	ProductID                int64        `json:"product_id"`
+	PlatformID               int64        `json:"platform_id"`
+	ProductColumnField       nulls.String `json:"product_column_field"`
+	ProductColumnConditions  nulls.String `json:"product_column_conditions"`
+	ProductColumnValue       nulls.String `json:"product_column_value"`
+	PlatformColumnField      nulls.String `json:"platform_column_field"`
+	PlatformColumnConditions nulls.String `json:"platform_column_conditions"`
+	PlatformColumnValue      nulls.String `json:"platform_column_value"`
+	RuleMandatory            nulls.String `json:"rule_mandatory"`
+	CreatedAt                time.Time    `json:"created_at"`
+	UpdatedAt                time.Time    `json:"updated_at"`
+	DeletedAt                nulls.Time   `json:"deleted_at"`
+}
+
+type SubMerchant struct {
+	ID              int64  `json:"id"`
+	MerchantID      int64  `json:"merchant_id"`
+	SubMerchantName string `json:"sub_merchant_name"`
+	SubMerchantCode string `json:"sub_merchant_code"`
+}
+
+type SubProduct struct {
+	ID             int64  `json:"id"`
+	ProductID      int64  `json:"product_id"`
+	SubProductName string `json:"sub_product_name"`
+	SubProductCode string `json:"sub_product_code"`
+}
+
+type TransactionModel struct {
+	ID                        int64         `json:"id"`
+	Name                      string        `json:"name"`
+	TransactionID             sql.NullInt16 `json:"transaction_id"`
+	MerchantTransactionID     sql.NullInt16 `json:"merchant_transaction_id"`
+	ChannelTransactionID      sql.NullInt16 `json:"channel_transaction_id"`
+	ChannelCode               sql.NullInt16 `json:"channel_code"`
+	ChannelName               sql.NullInt16 `json:"channel_name"`
+	MerchantCode              sql.NullInt16 `json:"merchant_code"`
+	MerchantName              sql.NullInt16 `json:"merchant_name"`
+	ProductCode               sql.NullInt16 `json:"product_code"`
+	ProductName               sql.NullInt16 `json:"product_name"`
+	TransactionDate           sql.NullInt16 `json:"transaction_date"`
+	TransactionDatetime       sql.NullInt16 `json:"transaction_datetime"`
+	TransactionAmount         sql.NullInt16 `json:"transaction_amount"`
+	SettledAmount             sql.NullInt16 `json:"settled_amount"`
+	TransactionDateFormat     nulls.String  `json:"transaction_date_format"`
+	TransactionDatetimeFormat nulls.String  `json:"transaction_datetime_format"`
+	RowStartAt                sql.NullInt16 `json:"row_start_at"`
+	FileType                  nulls.String  `json:"file_type"`
 }
 
 type TransactionStatus struct {

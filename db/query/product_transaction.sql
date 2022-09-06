@@ -1,18 +1,19 @@
 -- name: CreateProductTransaction :one
 INSERT INTO product_transactions (
     transaction_status_id, transaction_type_id, progress_event_id,
-    product_transaction_id, merchant_transaction_id, channel_transaction_id,
-    owner_id, transaction_id, transaction_date, 
-    transaction_datetime, collected_amount, settled_amount, 
+    product_transaction_id, merchant_transaction_id, product_id, sub_product_id,
+    platform_id, sub_platform_id, transaction_id, transaction_date, transaction_datetime, 
+    channel_code, channel_name, merchant_code, merchant_name,
+    product_code, product_name, collected_amount, settled_amount, 
     created_at, updated_at, deleted_at
 ) VALUES (
-    $1, $2, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
 )
 RETURNING *;
 
 -- name: AllProductTransaction :many
 SELECT
-    p.id, p.product_transaction_id, p.merchant_transaction_id, p.channel_transaction_id, p.owner_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
+    p.id, p.product_transaction_id, p.merchant_transaction_id, p.product_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
     p.transaction_status_id, s.status_name, s.status_description,
     p.transaction_type_id, r.type_name, r.type_description
 FROM product_transactions AS p
@@ -22,7 +23,7 @@ OFFSET $1
 LIMIT $2;
 
 -- name: AllDuplicateProductTransaction :many
-SELECT p.id, p.product_transaction_id, p.merchant_transaction_id, p.channel_transaction_id, p.owner_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
+SELECT p.id, p.product_transaction_id, p.merchant_transaction_id, p.product_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
     p.transaction_status_id, s.status_name, s.status_description,
     p.transaction_type_id, r.type_name, r.type_description from (
   SELECT *,
@@ -44,7 +45,7 @@ WITH deleted AS (
 		  ROW_NUMBER() OVER(PARTITION BY product_transaction_id, transaction_date ORDER BY id ASC) AS result
 		  FROM product_transactions
 		  WHERE product_transactions.transaction_date BETWEEN sqlc.arg(start_date)::date AND sqlc.arg(end_date)::date
-          AND product_transactions.owner_id = sqlc.arg(platform_id)::text
+          AND product_transactions.product_id = sqlc.arg(platform_id)::int
 		) duplicates
 		WHERE duplicates.result > 1
 	)

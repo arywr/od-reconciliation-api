@@ -13,10 +13,10 @@ import (
 )
 
 const allDuplicateProductTransaction = `-- name: AllDuplicateProductTransaction :many
-SELECT p.id, p.product_transaction_id, p.merchant_transaction_id, p.channel_transaction_id, p.owner_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
+SELECT p.id, p.product_transaction_id, p.merchant_transaction_id, p.product_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
     p.transaction_status_id, s.status_name, s.status_description,
     p.transaction_type_id, r.type_name, r.type_description from (
-  SELECT id, transaction_status_id, transaction_type_id, progress_event_id, product_transaction_id, merchant_transaction_id, channel_transaction_id, owner_id, transaction_id, transaction_date, transaction_datetime, collected_amount, settled_amount, created_at, updated_at, deleted_at,
+  SELECT id, product_id, sub_product_id, platform_id, sub_platform_id, transaction_status_id, transaction_type_id, progress_event_id, product_transaction_id, merchant_transaction_id, transaction_id, transaction_date, transaction_datetime, channel_code, channel_name, merchant_code, merchant_name, product_code, product_name, collected_amount, settled_amount, reconcile_at, created_at, updated_at, deleted_at,
   ROW_NUMBER() OVER(PARTITION BY product_transaction_id, transaction_date ORDER BY id asc) AS res
   FROM product_transactions
 ) p
@@ -36,8 +36,7 @@ type AllDuplicateProductTransactionRow struct {
 	ID                    int64        `json:"id"`
 	ProductTransactionID  nulls.String `json:"product_transaction_id"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
-	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
-	OwnerID               string       `json:"owner_id"`
+	ProductID             int32        `json:"product_id"`
 	TransactionID         string       `json:"transaction_id"`
 	TransactionDate       time.Time    `json:"transaction_date"`
 	TransactionDatetime   time.Time    `json:"transaction_datetime"`
@@ -68,8 +67,7 @@ func (q *Queries) AllDuplicateProductTransaction(ctx context.Context, arg AllDup
 			&i.ID,
 			&i.ProductTransactionID,
 			&i.MerchantTransactionID,
-			&i.ChannelTransactionID,
-			&i.OwnerID,
+			&i.ProductID,
 			&i.TransactionID,
 			&i.TransactionDate,
 			&i.TransactionDatetime,
@@ -101,7 +99,7 @@ func (q *Queries) AllDuplicateProductTransaction(ctx context.Context, arg AllDup
 
 const allProductTransaction = `-- name: AllProductTransaction :many
 SELECT
-    p.id, p.product_transaction_id, p.merchant_transaction_id, p.channel_transaction_id, p.owner_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
+    p.id, p.product_transaction_id, p.merchant_transaction_id, p.product_id, p.transaction_id, p.transaction_date, p.transaction_datetime, p.collected_amount, p.settled_amount, p.created_at, p.updated_at, p.deleted_at, p.progress_event_id,
     p.transaction_status_id, s.status_name, s.status_description,
     p.transaction_type_id, r.type_name, r.type_description
 FROM product_transactions AS p
@@ -120,8 +118,7 @@ type AllProductTransactionRow struct {
 	ID                    int64        `json:"id"`
 	ProductTransactionID  nulls.String `json:"product_transaction_id"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
-	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
-	OwnerID               string       `json:"owner_id"`
+	ProductID             int32        `json:"product_id"`
 	TransactionID         string       `json:"transaction_id"`
 	TransactionDate       time.Time    `json:"transaction_date"`
 	TransactionDatetime   time.Time    `json:"transaction_datetime"`
@@ -152,8 +149,7 @@ func (q *Queries) AllProductTransaction(ctx context.Context, arg AllProductTrans
 			&i.ID,
 			&i.ProductTransactionID,
 			&i.MerchantTransactionID,
-			&i.ChannelTransactionID,
-			&i.OwnerID,
+			&i.ProductID,
 			&i.TransactionID,
 			&i.TransactionDate,
 			&i.TransactionDatetime,
@@ -186,14 +182,15 @@ func (q *Queries) AllProductTransaction(ctx context.Context, arg AllProductTrans
 const createProductTransaction = `-- name: CreateProductTransaction :one
 INSERT INTO product_transactions (
     transaction_status_id, transaction_type_id, progress_event_id,
-    product_transaction_id, merchant_transaction_id, channel_transaction_id,
-    owner_id, transaction_id, transaction_date, 
-    transaction_datetime, collected_amount, settled_amount, 
+    product_transaction_id, merchant_transaction_id, product_id, sub_product_id,
+    platform_id, sub_platform_id, transaction_id, transaction_date, transaction_datetime, 
+    channel_code, channel_name, merchant_code, merchant_name,
+    product_code, product_name, collected_amount, settled_amount, 
     created_at, updated_at, deleted_at
 ) VALUES (
-    $1, $2, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
 )
-RETURNING id, transaction_status_id, transaction_type_id, progress_event_id, product_transaction_id, merchant_transaction_id, channel_transaction_id, owner_id, transaction_id, transaction_date, transaction_datetime, collected_amount, settled_amount, created_at, updated_at, deleted_at
+RETURNING id, product_id, sub_product_id, platform_id, sub_platform_id, transaction_status_id, transaction_type_id, progress_event_id, product_transaction_id, merchant_transaction_id, transaction_id, transaction_date, transaction_datetime, channel_code, channel_name, merchant_code, merchant_name, product_code, product_name, collected_amount, settled_amount, reconcile_at, created_at, updated_at, deleted_at
 `
 
 type CreateProductTransactionParams struct {
@@ -201,11 +198,19 @@ type CreateProductTransactionParams struct {
 	TransactionTypeID     int16        `json:"transaction_type_id"`
 	ProductTransactionID  nulls.String `json:"product_transaction_id"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
-	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
-	OwnerID               string       `json:"owner_id"`
+	ProductID             int32        `json:"product_id"`
+	SubProductID          nulls.Int32  `json:"sub_product_id"`
+	PlatformID            nulls.Int32  `json:"platform_id"`
+	SubPlatformID         nulls.Int32  `json:"sub_platform_id"`
 	TransactionID         string       `json:"transaction_id"`
 	TransactionDate       time.Time    `json:"transaction_date"`
 	TransactionDatetime   time.Time    `json:"transaction_datetime"`
+	ChannelCode           nulls.String `json:"channel_code"`
+	ChannelName           nulls.String `json:"channel_name"`
+	MerchantCode          nulls.String `json:"merchant_code"`
+	MerchantName          nulls.String `json:"merchant_name"`
+	ProductCode           nulls.String `json:"product_code"`
+	ProductName           nulls.String `json:"product_name"`
 	CollectedAmount       float64      `json:"collected_amount"`
 	SettledAmount         float64      `json:"settled_amount"`
 	CreatedAt             time.Time    `json:"created_at"`
@@ -219,11 +224,19 @@ func (q *Queries) CreateProductTransaction(ctx context.Context, arg CreateProduc
 		arg.TransactionTypeID,
 		arg.ProductTransactionID,
 		arg.MerchantTransactionID,
-		arg.ChannelTransactionID,
-		arg.OwnerID,
+		arg.ProductID,
+		arg.SubProductID,
+		arg.PlatformID,
+		arg.SubPlatformID,
 		arg.TransactionID,
 		arg.TransactionDate,
 		arg.TransactionDatetime,
+		arg.ChannelCode,
+		arg.ChannelName,
+		arg.MerchantCode,
+		arg.MerchantName,
+		arg.ProductCode,
+		arg.ProductName,
 		arg.CollectedAmount,
 		arg.SettledAmount,
 		arg.CreatedAt,
@@ -233,18 +246,27 @@ func (q *Queries) CreateProductTransaction(ctx context.Context, arg CreateProduc
 	var i ProductTransaction
 	err := row.Scan(
 		&i.ID,
+		&i.ProductID,
+		&i.SubProductID,
+		&i.PlatformID,
+		&i.SubPlatformID,
 		&i.TransactionStatusID,
 		&i.TransactionTypeID,
 		&i.ProgressEventID,
 		&i.ProductTransactionID,
 		&i.MerchantTransactionID,
-		&i.ChannelTransactionID,
-		&i.OwnerID,
 		&i.TransactionID,
 		&i.TransactionDate,
 		&i.TransactionDatetime,
+		&i.ChannelCode,
+		&i.ChannelName,
+		&i.MerchantCode,
+		&i.MerchantName,
+		&i.ProductCode,
+		&i.ProductName,
 		&i.CollectedAmount,
 		&i.SettledAmount,
+		&i.ReconcileAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -261,7 +283,7 @@ WITH deleted AS (
 		  ROW_NUMBER() OVER(PARTITION BY product_transaction_id, transaction_date ORDER BY id ASC) AS result
 		  FROM product_transactions
 		  WHERE product_transactions.transaction_date BETWEEN $1::date AND $2::date
-          AND product_transactions.owner_id = $3::text
+          AND product_transactions.product_id = $3::int
 		) duplicates
 		WHERE duplicates.result > 1
 	)
@@ -272,7 +294,7 @@ WITH deleted AS (
 type DeleteDuplicateProductTrxParams struct {
 	StartDate  time.Time `json:"start_date"`
 	EndDate    time.Time `json:"end_date"`
-	PlatformID string    `json:"platform_id"`
+	PlatformID int32     `json:"platform_id"`
 }
 
 func (q *Queries) DeleteDuplicateProductTrx(ctx context.Context, arg DeleteDuplicateProductTrxParams) (int64, error) {

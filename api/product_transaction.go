@@ -27,7 +27,7 @@ type CreateProductTrxRequest struct {
 	ProductTransactionID  nulls.String `json:"product_transaction_id" binding:"required"`
 	MerchantTransactionID nulls.String `json:"merchant_transaction_id"`
 	ChannelTransactionID  nulls.String `json:"channel_transaction_id"`
-	OwnerID               string       `json:"owner_id" binding:"required"`
+	ProductID             int32        `json:"product_id" binding:"required"`
 	TransactionID         string       `json:"transaction_id"`
 	TransactionDate       string       `json:"transaction_date" binding:"required"`
 	TransactionDatetime   string       `json:"transaction_datetime" binding:"required"`
@@ -66,8 +66,7 @@ func (server *Server) createProductTransaction(ctx *gin.Context) {
 		TransactionTypeID:     req.TransactionTypeID,
 		ProductTransactionID:  req.ProductTransactionID,
 		MerchantTransactionID: req.MerchantTransactionID,
-		ChannelTransactionID:  req.ChannelTransactionID,
-		OwnerID:               req.OwnerID,
+		ProductID:             req.ProductID,
 		TransactionID:         req.TransactionID,
 		TransactionDate:       trxDate,
 		TransactionDatetime:   trxDatetime,
@@ -155,7 +154,7 @@ func (server *Server) allDuplicateProductTransaction(ctx *gin.Context) {
 
 type CreateTrxFromCSV struct {
 	Day        int                   `form:"day"`
-	PlatformId string                `form:"platform_id" binding:"required"`
+	PlatformId int32                 `form:"platform_id" binding:"required"`
 	File       *multipart.FileHeader `form:"file"`
 }
 
@@ -186,7 +185,7 @@ func (server *Server) createTransactionFromCSV(ctx *gin.Context) {
 
 	unixTime := time.Now().Unix()
 	ext := filepath.Ext(req.File.Filename)
-	fileName := fmt.Sprintf("upload/%s_%d_%s.%s", uuid.New().String(), unixTime, req.PlatformId, ext)
+	fileName := fmt.Sprintf("upload/%s_%d_%d.%s", uuid.New().String(), unixTime, req.PlatformId, ext)
 
 	if err := ctx.SaveUploadedFile(args.File, fileName); err != nil {
 		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
@@ -196,17 +195,56 @@ func (server *Server) createTransactionFromCSV(ctx *gin.Context) {
 	// Read & Count CSV File
 	var counter int64
 
-	csvReader, csvFile, err := helper.ReadCSVFile(fileName)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
-		return
+	switch ext {
+	case ".xlsx":
+		xlsxReader, err := helper.ReadExcelFile(fileName)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+			return
+		}
+
+		for range xlsxReader {
+			counter++
+		}
+
+	case ".csv":
+		csvReader, csvFile, err := helper.ReadCSVFile(fileName)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+			return
+		}
+		defer csvFile.Close()
+
+		isHeader := true
+
+		for {
+			_, err := csvReader.Read()
+			if err != nil {
+				if err == io.EOF {
+					err = nil
+				} else {
+					ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
+					return
+				}
+
+				break
+			}
+
+			if isHeader {
+				isHeader = false
+				continue
+			}
+			counter++
+		}
+
+	default:
+		counter = 0
 	}
-	defer csvFile.Close()
 
 	// Create progress data first
 	progressArgs := db.CreateProgressEventParams{
 		ProgressEventTypeID: 1,
-		ProgressName:        req.PlatformId,
+		ProgressName:        fmt.Sprintf("Reading file: %d", req.PlatformId),
 		Status:              "on process",
 		Percentage:          0,
 		File:                req.File.Filename,
@@ -216,28 +254,6 @@ func (server *Server) createTransactionFromCSV(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
 		return
-	}
-
-	isHeader := true
-
-	for {
-		_, err := csvReader.Read()
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-			} else {
-				ctx.JSON(http.StatusInternalServerError, APIErrorResponse(http.StatusInternalServerError, "ERROR", err))
-				return
-			}
-
-			break
-		}
-
-		if isHeader {
-			isHeader = false
-			continue
-		}
-		counter++
 	}
 
 	res := CreateTrxCSVResult{
@@ -276,12 +292,12 @@ func (server *Server) createTransactionFromCSV(ctx *gin.Context) {
 type DeleteDuplicateTrxRequest struct {
 	StartDate  string `json:"start_date" binding:"required"`
 	EndDate    string `json:"end_date" binding:"required"`
-	PlatformID string `json:"platform_id" binding:"required"`
+	PlatformID int32  `json:"platform_id" binding:"required"`
 }
 
 type DeleteDuplicateTrxResult struct {
-	RowsAffected int64  `json:"rows_deleted"`
-	PlatformID   string `json:"platform_id"`
+	RowsAffected int64 `json:"rows_deleted"`
+	PlatformID   int32 `json:"platform_id"`
 }
 
 func (server *Server) deleteDuplicateProductTransaction(ctx *gin.Context) {

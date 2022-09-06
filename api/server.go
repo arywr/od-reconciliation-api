@@ -65,6 +65,7 @@ func NewServer(store *db.Store) *Server {
 	apiMerchantTrx.DELETE("/:id", server.deleteMerchantTransactionByID)
 
 	apiReconciliation.POST("/", server.reconciliationProduct)
+	apiReconciliation.POST("/start", server.reconcile)
 
 	server.router = router
 	return server
